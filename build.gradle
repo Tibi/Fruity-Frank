@@ -1,10 +1,12 @@
 buildscript {
+    ext.kotlin_version = '1.1.4'
     repositories {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
 
@@ -63,7 +65,7 @@ project(":android") {
 
 project(":core") {
     apply plugin: "java"
-
+    apply plugin: "kotlin"
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"

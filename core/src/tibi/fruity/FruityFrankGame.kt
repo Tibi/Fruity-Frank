@@ -3,17 +3,17 @@ package tibi.fruity
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.g2d.TextureAtlas
+
+
 
 
 
 class FruityFrankGame : ApplicationAdapter() {
 
     lateinit var spriteBatch: SpriteBatch
-    lateinit var img: Texture
     lateinit var pruneAnim: Animation
 
     // A variable for tracking elapsed time for the animation
@@ -21,9 +21,10 @@ class FruityFrankGame : ApplicationAdapter() {
 
     override fun create() {
         spriteBatch = SpriteBatch()
-        img = Texture("prune.png")
-        val regions = TextureRegion.split(img, 41, 28)
-        pruneAnim = Animation(0.25F, *regions[0])
+
+        val atlas = TextureAtlas("main.atlas")
+        pruneAnim = Animation(0.25F, atlas.findRegions("frank/ball right"))
+
     }
 
     override fun render() {
@@ -39,6 +40,5 @@ class FruityFrankGame : ApplicationAdapter() {
 
     override fun dispose() {
         spriteBatch.dispose()
-        img.dispose()
     }
 }

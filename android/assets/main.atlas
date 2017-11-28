@@ -1,0 +1,279 @@
+
+main.png
+size: 2048,64
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+backgrounds/gate
+  rotate: false
+  xy: 1061, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+backgrounds/header
+  rotate: false
+  xy: 2, 34
+  size: 486, 28
+  orig: 486, 28
+  offset: 0, 0
+  index: -1
+backgrounds/level1
+  rotate: false
+  xy: 490, 31
+  size: 66, 31
+  orig: 66, 31
+  offset: 0, 0
+  index: -1
+backgrounds/level2
+  rotate: false
+  xy: 1486, 46
+  size: 33, 16
+  orig: 33, 16
+  offset: 0, 0
+  index: -1
+backgrounds/level3
+  rotate: false
+  xy: 2, 2
+  size: 66, 30
+  orig: 66, 30
+  offset: 0, 0
+  index: -1
+backgrounds/level4
+  rotate: false
+  xy: 626, 31
+  size: 65, 31
+  orig: 65, 31
+  offset: 0, 0
+  index: -1
+backgrounds/level5
+  rotate: false
+  xy: 693, 31
+  size: 65, 31
+  orig: 65, 31
+  offset: 0, 0
+  index: -1
+backgrounds/level6
+  rotate: false
+  xy: 558, 31
+  size: 66, 31
+  orig: 66, 31
+  offset: 0, 0
+  index: -1
+backgrounds/level7
+  rotate: false
+  xy: 70, 2
+  size: 66, 30
+  orig: 66, 30
+  offset: 0, 0
+  index: -1
+dyno/right
+  rotate: false
+  xy: 846, 33
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+dyno/right
+  rotate: false
+  xy: 846, 2
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+frank/ball
+  rotate: false
+  xy: 1486, 36
+  size: 16, 8
+  orig: 16, 8
+  offset: 0, 0
+  index: -1
+frank/ball down
+  rotate: false
+  xy: 760, 33
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+frank/ball down
+  rotate: false
+  xy: 889, 2
+  size: 40, 29
+  orig: 40, 29
+  offset: 0, 0
+  index: 1
+frank/ball right
+  rotate: false
+  xy: 803, 2
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+frank/ball right
+  rotate: false
+  xy: 267, 3
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+frank/down
+  rotate: false
+  xy: 181, 3
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+frank/down
+  rotate: false
+  xy: 760, 2
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+frank/right
+  rotate: false
+  xy: 138, 2
+  size: 41, 30
+  orig: 41, 30
+  offset: 0, 0
+  index: 2
+frank/right
+  rotate: false
+  xy: 889, 33
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+fruits/apple
+  rotate: false
+  xy: 932, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+fruits/banana
+  rotate: false
+  xy: 1276, 34
+  size: 40, 28
+  orig: 40, 28
+  offset: 0, 0
+  index: -1
+fruits/blueberry
+  rotate: false
+  xy: 975, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+fruits/cherry
+  rotate: false
+  xy: 1147, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+fruits/grape
+  rotate: false
+  xy: 1360, 34
+  size: 40, 28
+  orig: 40, 28
+  offset: 0, 0
+  index: -1
+fruits/lemon
+  rotate: false
+  xy: 396, 4
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+fruits/peach
+  rotate: false
+  xy: 1104, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+fruits/pear
+  rotate: false
+  xy: 1318, 34
+  size: 40, 28
+  orig: 40, 28
+  offset: 0, 0
+  index: -1
+guy/down
+  rotate: false
+  xy: 1402, 34
+  size: 40, 28
+  orig: 40, 28
+  offset: 0, 0
+  index: 1
+guy/down
+  rotate: false
+  xy: 1444, 34
+  size: 40, 28
+  orig: 40, 28
+  offset: 0, 0
+  index: 2
+guy/right
+  rotate: false
+  xy: 439, 4
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: 1
+guy/right
+  rotate: false
+  xy: 1233, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: 2
+prune/down
+  rotate: false
+  xy: 310, 3
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+prune/down
+  rotate: false
+  xy: 931, 2
+  size: 34, 29
+  orig: 34, 29
+  offset: 0, 0
+  index: 2
+prune/falling
+  rotate: false
+  xy: 1190, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: -1
+prune/right
+  rotate: false
+  xy: 224, 3
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+prune/right
+  rotate: false
+  xy: 803, 33
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+strawberry/right
+  rotate: false
+  xy: 353, 4
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: 1
+strawberry/right
+  rotate: false
+  xy: 1018, 34
+  size: 41, 28
+  orig: 41, 28
+  offset: 0, 0
+  index: 2

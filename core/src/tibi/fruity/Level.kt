@@ -107,7 +107,7 @@ open class GridItem(var gridX: Int, var gridY: Int) {
     }
 
     open fun move(dir: Direction) {
-        val speed = 40f
+        val speed = 80f
         if (xSpeed != 0f || ySpeed != 0f) return
         when (dir) {
             Direction.RIGHT -> if (gridX < GRID_WIDTH - 1) {

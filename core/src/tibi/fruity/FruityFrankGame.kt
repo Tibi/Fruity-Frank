@@ -2,7 +2,7 @@ package tibi.fruity
 
 import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.Input
+import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
@@ -55,6 +55,8 @@ class FruityFrankGame : ApplicationAdapter() {
     override fun render() {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
+        processInput()
+
         batch.begin()
         batch.disableBlending()
         TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
@@ -62,6 +64,15 @@ class FruityFrankGame : ApplicationAdapter() {
         level.render(batch, Gdx.graphics.deltaTime)
         batch.end()
     }
+
+    private fun processInput() {
+        if (isKeyPressed(Keys.X, Keys.RIGHT)) level.movePlayer(Direction.RIGHT)
+        if (isKeyPressed(Keys.Z, Keys.LEFT)) level.movePlayer(Direction.LEFT)
+        if (isKeyPressed(Keys.SEMICOLON, Keys.UP)) level.movePlayer(Direction.UP)
+        if (isKeyPressed(Keys.PERIOD, Keys.DOWN)) level.movePlayer(Direction.DOWN)
+    }
+
+    private fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
 
     override fun dispose() {
         batch.dispose()
@@ -72,13 +83,7 @@ enum class Direction { UP, DOWN, LEFT, RIGHT }
 
 class FruityInput(val game: FruityFrankGame) : InputAdapter() {
     override fun keyDown(keycode: Int): Boolean {
-        when (keycode) {
-            in arrayOf(Input.Keys.X, Input.Keys.RIGHT) -> game.level.movePlayer(Direction.RIGHT)
-            in arrayOf(Input.Keys.Z, Input.Keys.LEFT) -> game.level.movePlayer(Direction.LEFT)
-            in arrayOf(Input.Keys.SEMICOLON, Input.Keys.UP) -> game.level.movePlayer(Direction.UP)
-            in arrayOf(Input.Keys.PERIOD, Input.Keys.DOWN) -> game.level.movePlayer(Direction.DOWN)
-            else -> return super.keyDown(keycode)
-        }
+        if (keycode == Keys.RIGHT_BRACKET) game.level.throwBall()
         return true
     }
 }

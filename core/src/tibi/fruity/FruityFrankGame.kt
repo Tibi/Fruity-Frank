@@ -4,7 +4,6 @@ import com.badlogic.gdx.ApplicationAdapter
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputAdapter
-import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
@@ -52,15 +51,23 @@ class FruityFrankGame : ApplicationAdapter() {
         return random.nextInt(to - from) + from
     }
 
+    private var frameBufferNo = 0
+
     override fun render() {
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
 
         processInput()
 
         batch.begin()
         batch.disableBlending()
-        TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
-        batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
+
+        // Don't clear the screen, instead draw the baground on both framebuffers
+        // TODO test on android...
+        if (frameBufferNo < 2) {
+            TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+            batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
+            frameBufferNo++
+        }
+
         level.render(batch, Gdx.graphics.deltaTime)
         batch.end()
     }

@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
-const val SCREEN_WIDTH = 649F // was 646, 3 columns were only 40 px wide
+const val SCREEN_WIDTH = 649F // was 646 in original game, 3 columns were only 40 px wide
 const val SCREEN_HEIGHT = 378F
 const val HEADER_HEIGHT = 28F
 
@@ -22,8 +22,25 @@ const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
 
 
-class Level(val player: Perso, val monsters: Array<Perso>, val fruits: List<Fruit>) {
+class Level(val game: FruityFrankGame) {
 
+    val player = Frank(this, game.atlas)
+    val fruits = ArrayList<Fruit>()
+    val monsters = ArrayList<Perso>()
+    var speedMult = 100f
+
+    init {
+        val guy = Perso(this, createAnimations(game.atlas, "guy/"), 1, 3)
+        monsters.add(guy)
+        guy.move(Direction.RIGHT)
+        val prune = Perso(this, createAnimations(game.atlas, "prune/"), 5, 5)
+        monsters.add(prune)
+        prune.move(Direction.UP)
+
+        val cherry = game.atlas.findRegion("fruits/cherry")
+        fruits.addAll(List(10, { _ -> Fruit(this, cherry,
+                game.rand(0, GRID_WIDTH), game.rand(0, GRID_HEIGHT), 10) }))
+    }
     val tiles: Array<Array<TextureRegion>> = Array(GRID_HEIGHT, { Array(GRID_WIDTH, { TextureRegion() }) })
 
     fun fill(tile: TextureRegion) {
@@ -61,144 +78,53 @@ class Level(val player: Perso, val monsters: Array<Perso>, val fruits: List<Frui
     }
 
     fun render(batch: SpriteBatch, deltaTime: Float) {
+        if (monsters[0].xSpeed == 0f) {
+            monsters[0].move(Direction.RIGHT)
+        }
+        detectCollisions()
         player.render(batch, deltaTime)
         monsters.forEach { it.render(batch, deltaTime) }
         fruits.forEach { it.render(batch, deltaTime) }
+        if (fruits.isEmpty()) {
+            println("WINNER!!")
+        }
+    }
+
+    private var score: Int = 0
+
+    private fun detectCollisions() {
+        if (monsters.any { it.collides(player) }) {
+            println("DEAD")
+        }
+        val fruitsCol = fruits.filter { it.collides(player) }
+        if (fruitsCol.isNotEmpty()) {
+            score += fruitsCol.map { it.points }.sum()
+            println("MIAM + $score")
+            fruits.removeAll(fruitsCol)
+            speedMult += 10
+        }
     }
 
     fun throwBall() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
+
 }
 
 
-open class GridItem(var gridX: Int, var gridY: Int) {
 
-    var x = 0F
-    var y = 0F
-    var xSpeed = 0f
-    var ySpeed = 0f
+typealias AnimationMap = Map<Perso.State, Animation<out TextureRegion>>
 
-    init {
-        x = gridX2x()
-        y = gridY2y()
-    }
-
-    private fun gridY2y() = GRID_START_Y + gridY * (CELL_HEIGHT + GRID_MARGIN)
-
-    private fun gridX2x() = GRID_START_X + gridX * CELL_WIDTH
-
-
-    open fun update(deltaTime: Float) {
-        if (xSpeed != 0f) {
-            x += xSpeed * deltaTime
-            if (xSpeed > 0 && x >= gridX2x()
-                    || xSpeed < 0 && x <= gridX2x()) {
-                xSpeed = 0f
-            }
-        }
-        if (ySpeed != 0f) {
-            y += ySpeed * deltaTime
-            if (ySpeed > 0 && y >= gridY2y()
-                    || ySpeed < 0 && y <= gridY2y()) {
-                ySpeed = 0f
-            }
-        } 
-    }
-
-    open fun move(dir: Direction) {
-        val speed = 80f
-        if (xSpeed != 0f || ySpeed != 0f) return
-        when (dir) {
-            Direction.RIGHT -> if (gridX < GRID_WIDTH - 1) {
-                gridX++
-                xSpeed = speed
-            }
-            Direction.LEFT -> if (gridX > 0) {
-                gridX--
-                xSpeed = -speed
-            }
-            Direction.UP -> if (gridY < GRID_HEIGHT - 1) {
-                gridY++
-                ySpeed = speed
-            }
-            Direction.DOWN -> if (gridY > 0) {
-                gridY--
-                ySpeed = -speed
-            }
-        }
-    }
-
-    open fun render(batch: SpriteBatch, deltaTime: Float) {
-        update(deltaTime)
-    }
-}
-
-
-class Perso(val anims: Map<State, Animation<out TextureRegion>>, gridX: Int, gridY: Int) : GridItem(gridX, gridY) {
-
-    enum class State { IDLE, RIGHT, LEFT, UP, DOWN, FALLING;
-        companion object {
-            fun fromDirection(dir: Direction): State = when (dir) {
-                Direction.UP -> UP
-                Direction.DOWN -> DOWN
-                Direction.LEFT -> LEFT
-                Direction.RIGHT -> RIGHT
-            }
-        }
-    }
-
-    var state = State.IDLE
-
-    init {
-        anims.values.forEach { it.playMode = Animation.PlayMode.LOOP }
-    }
-
-    var stateTime: Float = 0f
-
-    override fun update(deltaTime: Float) {
-        stateTime += deltaTime
-        super.update(deltaTime)
-        if (xSpeed == 0f && ySpeed == 0f) {
-            state = State.IDLE
-        }
-    }
-
-    override fun render(batch: SpriteBatch, deltaTime: Float) {
-        super.render(batch, deltaTime)
-        val anim = anims[state]
-//        println("$state -> $anim")
-        if (anim != null) {
-            batch.draw(anim.getKeyFrame(stateTime), x, y)
-        }
-    }
-
-    override fun move(dir: Direction) {
-        super.move(dir)
-        state = State.fromDirection(dir)
-    }
-
-    companion object {
-        fun create(atlas: TextureAtlas, name: String, x: Int, y: Int): Perso {
-              val leftRegions = atlas.findRegions(name + "right")
-              val rightRegions = GdxArray(leftRegions.map { TextureRegion(it).apply { it.flip(true, false) } }.toTypedArray())
-              val downRegions = atlas.findRegions(name + "down")
-              return Perso(mapOf(
-                      State.RIGHT to Animation(0.15F, rightRegions),
-                      State.LEFT to Animation(0.15F, leftRegions),
-                      State.UP to Animation(0.15F, downRegions),
-                      State.DOWN to Animation(0.15F, downRegions),
-                      State.IDLE to Animation(1F, rightRegions[0])
-              ), x, y)
-          }
-    }
-}
-
-class Fruit(val textureRegion: TextureRegion, gridX: Int, gridY: Int) : GridItem(gridX, gridY) {
-    override fun render(batch: SpriteBatch, deltaTime: Float) {
-        super.render(batch, deltaTime)
-        batch.draw(textureRegion, x, y)
-    }
+fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
+    val leftRegions = atlas.findRegions(name + "right")
+    val rightRegions = com.badlogic.gdx.utils.Array(leftRegions.map { TextureRegion(it).apply { it.flip(true, false) } }.toTypedArray())
+    val downRegions = atlas.findRegions(name + "down")
+    return mapOf(
+            Perso.State.RIGHT to Animation(0.15F, rightRegions),
+            Perso.State.LEFT to Animation(0.15F, leftRegions),
+            Perso.State.UP to Animation(0.15F, downRegions),
+            Perso.State.DOWN to Animation(0.15F, downRegions),
+            Perso.State.IDLE to Animation(1F, rightRegions[0]))
 }
 
 //646*378

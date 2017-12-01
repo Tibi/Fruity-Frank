@@ -1,10 +1,8 @@
 package tibi.fruity;
 
 import android.os.Bundle;
-
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
-import tibi.fruity.FruityFrankGame;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override

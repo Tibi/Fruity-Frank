@@ -24,12 +24,22 @@ const val GRID_HEIGHT = 10
 
 class Level(val game: FruityFrankGame) {
 
+    data class IntPoint(val x: Int, val y: Int)
+
     val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val monsters = ArrayList<Perso>()
+    val blackBlocks = HashSet<IntPoint>()
     var speedMult = 100f
+    val black: TextureRegion
+    val gate: TextureRegion
 
     init {
+        black = game.atlas.findRegion("backgrounds/black")
+
+        horizLine(6)
+        gate = game.atlas.findRegion("backgrounds/gate")
+
         val guy = Perso(this, createAnimations(game.atlas, "guy/"), 1, 3)
         monsters.add(guy)
         guy.move(Direction.RIGHT)
@@ -41,43 +51,15 @@ class Level(val game: FruityFrankGame) {
         fruits.addAll(List(10, { _ -> Fruit(this, cherry,
                 game.rand(0, GRID_WIDTH), game.rand(0, GRID_HEIGHT), 10) }))
     }
-    val tiles: Array<Array<TextureRegion>> = Array(GRID_HEIGHT, { Array(GRID_WIDTH, { TextureRegion() }) })
-
-    fun fill(tile: TextureRegion) {
-        for (y in 0 until GRID_HEIGHT) {
-            for (x in 0 until GRID_WIDTH) {
-                tiles[y][x] = tile
-            }
-        }
-    }
-
-    fun horizLine(y: Int, tile: TextureRegion) {
-        for (x in 0 until GRID_WIDTH) {
-            tiles[y][x] = tile
-        }
-    }
-
-    fun set(x: Int, y: Int, tile: TextureRegion) {
-        tiles[y][x] = tile
-    }
-
-    fun draw(batch: SpriteBatch, xInit: Float, yInit: Float) {
-        var y = yInit
-        for (yi in 0 until GRID_HEIGHT) {
-            var x = xInit
-            for (xi in 0 until GRID_WIDTH) {
-                batch.draw(tiles[yi][xi], x, y)
-                x += CELL_WIDTH
-            }
-            y += CELL_HEIGHT
-        }
-    }
 
     fun movePlayer(dir: Direction) {
         player.move(dir)
     }
 
     fun render(batch: SpriteBatch, deltaTime: Float) {
+        for (blackBlock in blackBlocks) {
+            batch.draw(black, CELL_WIDTH * blackBlock.x, CELL_HEIGHT * blackBlock.y)
+        }
         if (monsters[0].xSpeed == 0f) {
             monsters[0].move(Direction.RIGHT)
         }
@@ -99,9 +81,15 @@ class Level(val game: FruityFrankGame) {
         val fruitsCol = fruits.filter { it.collides(player) }
         if (fruitsCol.isNotEmpty()) {
             score += fruitsCol.map { it.points }.sum()
-            println("MIAM + $score")
+            println("MIAM niam + $score")
             fruits.removeAll(fruitsCol)
             speedMult += 10
+        }
+    }
+
+    fun horizLine(y: Int) {
+        for (x in 0 until GRID_WIDTH) {
+            blackBlocks.add(IntPoint(x, y))
         }
     }
 

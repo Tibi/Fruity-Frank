@@ -39,8 +39,6 @@ class FruityFrankGame : ApplicationAdapter() {
         bg = atlas.findRegion("backgrounds/level1")
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
-        level.horizLine(6, atlas.findRegion("guy/right"))
-        level.set(6, 6, atlas.findRegion("backgrounds/gate"))
         Gdx.input.inputProcessor = FruityInput(this)
     }
 

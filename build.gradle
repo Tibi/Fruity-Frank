@@ -1,20 +1,4 @@
 buildscript {
-    ext.kotlin_version = '1.2.0'
-    repositories {
-        mavenCentral()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-    }
-}
-
-allprojects {
-    apply plugin: "eclipse"
-    apply plugin: "idea"
-
-    version = '1.0'
     ext {
         appName = "Fruity Frank"
         gdxVersion = '1.9.7'
@@ -23,6 +7,38 @@ allprojects {
         ashleyVersion = '1.7.3'
         aiVersion = '1.8.1'
     }
+
+    ext.kotlin_version = '1.2.0'
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "com.badlogicgames.gdx:gdx-tools:$gdxVersion"
+    }
+}
+
+// Store the parameters you want to pass the texturePacker here...
+project.ext.texturePacker = [ "assets source/sprites", "android/assets/", "main" ]
+
+// Import the texture packer
+import com.badlogic.gdx.tools.texturepacker.TexturePacker
+
+// Packs the textures to the atlas
+task texturePacker << {
+  if (project.ext.has('texturePacker')) {
+    logger.info "Calling TexturePacker: "+texturePacker
+    TexturePacker.process(texturePacker[0], texturePacker[1], texturePacker[2])
+  }
+}
+
+allprojects {
+    apply plugin: "eclipse"
+    apply plugin: "idea"
+
+    version = '1.0'
 
     repositories {
         mavenCentral()

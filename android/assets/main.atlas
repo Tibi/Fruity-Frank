@@ -6,16 +6,16 @@ filter: Nearest,Nearest
 repeat: none
 backgrounds/black
   rotate: false
-  xy: 721, 68
-  size: 40, 28
-  orig: 40, 28
+  xy: 249, 67
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: -1
 backgrounds/gate
   rotate: false
-  xy: 576, 98
-  size: 41, 28
-  orig: 41, 28
+  xy: 705, 97
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: -1
 backgrounds/header
@@ -34,7 +34,7 @@ backgrounds/level1
   index: -1
 backgrounds/level2
   rotate: false
-  xy: 910, 110
+  xy: 2, 14
   size: 33, 16
   orig: 33, 16
   offset: 0, 0
@@ -76,211 +76,211 @@ backgrounds/level7
   index: -1
 dyno/right
   rotate: false
-  xy: 335, 67
+  xy: 877, 97
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 1
 dyno/right
   rotate: false
-  xy: 464, 67
+  xy: 550, 66
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 2
 frank/ball
   rotate: false
-  xy: 847, 88
+  xy: 1006, 118
   size: 16, 8
   orig: 16, 8
   offset: 0, 0
   index: -1
 frank/ball down
   rotate: false
-  xy: 88, 2
+  xy: 113, 2
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
-  index: 2
+  index: 1
 frank/ball down
   rotate: false
-  xy: 550, 67
-  size: 40, 29
-  orig: 40, 29
+  xy: 156, 2
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
-  index: 1
+  index: 2
 frank/ball right
   rotate: false
-  xy: 131, 2
+  xy: 199, 2
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 1
 frank/ball right
   rotate: false
-  xy: 174, 2
+  xy: 206, 67
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 2
 frank/down
-  rotate: false
-  xy: 204, 35
-  size: 41, 29
-  orig: 41, 29
-  offset: 0, 0
-  index: 1
-frank/down
-  rotate: false
-  xy: 292, 67
-  size: 41, 29
-  orig: 41, 29
-  offset: 0, 0
-  index: 2
-frank/right
-  rotate: false
-  xy: 206, 66
-  size: 41, 30
-  orig: 41, 30
-  offset: 0, 0
-  index: 2
-frank/right
   rotate: false
   xy: 378, 67
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 1
-fruits/apple
+frank/down
   rotate: false
-  xy: 2, 2
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: -1
-fruits/banana
-  rotate: false
-  xy: 748, 98
-  size: 40, 28
-  orig: 40, 28
-  offset: 0, 0
-  index: -1
-fruits/blueberry
-  rotate: false
-  xy: 45, 2
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: -1
-fruits/cherry
-  rotate: false
-  xy: 490, 98
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: -1
-fruits/grape
-  rotate: false
-  xy: 832, 98
-  size: 40, 28
-  orig: 40, 28
-  offset: 0, 0
-  index: -1
-fruits/lemon
-  rotate: false
-  xy: 619, 98
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: -1
-fruits/peach
-  rotate: false
-  xy: 592, 68
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: -1
-fruits/pear
-  rotate: false
-  xy: 805, 68
-  size: 40, 28
-  orig: 40, 28
-  offset: 0, 0
-  index: -1
-guy/down
-  rotate: false
-  xy: 790, 98
-  size: 40, 28
-  orig: 40, 28
-  offset: 0, 0
-  index: 1
-guy/down
-  rotate: false
-  xy: 763, 68
-  size: 40, 28
-  orig: 40, 28
+  xy: 533, 97
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: 2
-guy/right
+frank/right
   rotate: false
-  xy: 662, 98
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: 1
-guy/right
-  rotate: false
-  xy: 705, 98
-  size: 41, 28
-  orig: 41, 28
-  offset: 0, 0
-  index: 2
-prune/down
-  rotate: false
-  xy: 249, 67
+  xy: 920, 97
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 1
-prune/down
+frank/right
   rotate: false
-  xy: 874, 97
-  size: 34, 29
-  orig: 34, 29
+  xy: 593, 66
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: 2
-prune/falling
+fruits/apple
   rotate: false
-  xy: 533, 98
-  size: 41, 28
-  orig: 41, 28
+  xy: 70, 2
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: -1
-prune/right
+fruits/banana
+  rotate: false
+  xy: 765, 66
+  size: 40, 29
+  orig: 40, 29
+  offset: 0, 0
+  index: -1
+fruits/blueberry
+  rotate: false
+  xy: 292, 67
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
+fruits/cherry
+  rotate: false
+  xy: 335, 67
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
+fruits/grape
+  rotate: false
+  xy: 807, 66
+  size: 40, 29
+  orig: 40, 29
+  offset: 0, 0
+  index: -1
+fruits/lemon
+  rotate: false
+  xy: 748, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
+fruits/peach
+  rotate: false
+  xy: 791, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
+fruits/pear
+  rotate: false
+  xy: 834, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
+guy/down
   rotate: false
   xy: 421, 67
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 1
+guy/down
+  rotate: false
+  xy: 576, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+guy/right
+  rotate: false
+  xy: 963, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+guy/right
+  rotate: false
+  xy: 636, 66
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+prune/down
+  rotate: false
+  xy: 490, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+prune/down
+  rotate: false
+  xy: 619, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 2
+prune/falling
+  rotate: false
+  xy: 662, 97
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: -1
 prune/right
   rotate: false
-  xy: 507, 67
+  xy: 464, 66
+  size: 41, 29
+  orig: 41, 29
+  offset: 0, 0
+  index: 1
+prune/right
+  rotate: false
+  xy: 679, 66
   size: 41, 29
   orig: 41, 29
   offset: 0, 0
   index: 2
 strawberry/right
   rotate: false
-  xy: 635, 68
-  size: 41, 28
-  orig: 41, 28
+  xy: 507, 66
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: 1
 strawberry/right
   rotate: false
-  xy: 678, 68
-  size: 41, 28
-  orig: 41, 28
+  xy: 722, 66
+  size: 41, 29
+  orig: 41, 29
   offset: 0, 0
   index: 2

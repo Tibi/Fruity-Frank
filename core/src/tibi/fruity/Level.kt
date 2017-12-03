@@ -1,8 +1,13 @@
 package tibi.fruity
 
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx.InputAdapter
+import com.badlogic.gdx.Screen
+import com.badlogic.gdx.graphics.GL20
+import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
-import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
@@ -23,65 +28,107 @@ const val GRID_MARGIN = 6F
 const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
 
+enum class Direction { NONE, UP, DOWN, LEFT, RIGHT}
 
-class Level(val game: FruityFrankGame) {
+
+class Level(private val game: FruityFrankGame) : Screen {
 
     data class IntPoint(val x: Int, val y: Int)
 
-    val bg: TextureRegion = game.atlas.findRegion("backgrounds/level1")
-    val header: TextureRegion = game.atlas.findRegion("backgrounds/header")
-    val player = Frank(this, game.atlas)
-    val fruits = ArrayList<Fruit>()
-    val monsters = ArrayList<Perso>()
-    val blackBlocks = HashSet<IntPoint>()
-    val black = game.atlas.findRegion("backgrounds/black")
-    val blackHigh = game.atlas.findRegion("backgrounds/black_high")
-    val gate = game.atlas.findRegion("backgrounds/gate")
+    private val bg = game.atlas.findRegion("backgrounds/level1")
+    private val header = game.atlas.findRegion("backgrounds/header")
+    private val player = Frank(this, game.atlas)
+    private val fruits = ArrayList<Fruit>()
+    private val monsters = ArrayList<Perso>()
+    private val blackBlocks = HashSet<IntPoint>()
+    private val black = game.atlas.findRegion("backgrounds/black")
+    private val blackHigh = game.atlas.findRegion("backgrounds/black_high")
+    private val gate = game.atlas.findRegion("backgrounds/gate")
+
     var speedMult = 100f
+    private var score: Int = 0
+
+    val cam = OrthographicCamera()
 
     init {
+        cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
+
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         blackCross(6, 6)
 
         val guy = Monster(this, createAnimations(game.atlas, "guy/"), 1, 3)
-        monsters.add(guy)
-        guy.move(Direction.RIGHT)
+//        monsters.add(guy)
+//        guy.move(Direction.RIGHT)
         val prune = Monster(this, createAnimations(game.atlas, "prune/"), 5, 5)
-        monsters.add(prune)
-        prune.move(Direction.UP)
+//        monsters.add(prune)
+//        prune.move(Direction.UP)
 
         val cherry = game.atlas.findRegion("fruits/cherry")
         fruits.addAll(List(10, { _ -> Fruit(this, cherry,
                 game.rand(0, GRID_WIDTH), game.rand(0, GRID_HEIGHT), 10) }))
+        Gdx.input.inputProcessor = FruityInput(this)
     }
 
-    fun movePlayer(dir: Direction) {
-        player.move(dir)
+    fun update(deltaTime: Float) {
+        processInput()
+        detectCollisions()
+        player.update(deltaTime)
+        monsters.forEach { it.update(deltaTime) }
+        fruits.forEach { it.update(deltaTime) }
     }
 
-    fun render(batch: SpriteBatch, deltaTime: Float) {
-        TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
-        batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
+    override fun render(deltaTime: Float) {
+        update(deltaTime)
+        
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+        game.batch.projectionMatrix = cam.combined
+        game.batch.begin()
+        game.batch.disableBlending()
+
+        // Background
+        TiledDrawable(bg).draw(game.batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+        // Header
+        game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
+        // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock.y == GRID_HEIGHT - 1) black else blackHigh
-            batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
+            game.batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
         }
-        batch.draw(gate, GridItem.gridX2x(6), GridItem.gridY2y(6))
-        if (monsters[0].xSpeed == 0f) {
-            monsters[0].move(Direction.RIGHT)
-        }
-        detectCollisions()
-        player.render(batch, deltaTime)
-        monsters.forEach { it.render(batch, deltaTime) }
-        fruits.forEach { it.render(batch, deltaTime) }
+        // Monster gate
+        game.batch.draw(gate, GridItem.gridX2x(6), GridItem.gridY2y(6))
+
+        player.render(game.batch)
+        monsters.forEach { it.render(game.batch) }
+        fruits.forEach { it.render(game.batch) }
+        game.batch.end()
+        
         if (fruits.isEmpty()) {
             println("WINNER!!")
         }
     }
 
-    private var score: Int = 0
+    fun processInput() {
+        when {
+            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT) -> player.nextDirection = Direction.RIGHT
+            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT) -> player.nextDirection = Direction.LEFT
+            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) -> player.nextDirection = Direction.UP
+            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN) -> player.nextDirection = Direction.DOWN
+            else -> player.nextDirection = Direction.NONE
+        }
+    }
 
+    private fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
+
+    override fun show() {}
+    override fun hide() {}
+    override fun pause() {}
+    override fun resume() {}
+    override fun dispose() {}
+    override fun resize(width: Int, height: Int) {
+        // TODO update viewport
+    }
+    
     private fun detectCollisions() {
         if (monsters.any { it.collides(player) }) {
             println("DEAD")
@@ -95,7 +142,7 @@ class Level(val game: FruityFrankGame) {
         }
     }
 
-    fun blackCross(x: Int, y: Int) {
+    private fun blackCross(x: Int, y: Int) {
         for (x1 in 0 until GRID_WIDTH) {
             blackBlocks.add(IntPoint(x1, y))
         }
@@ -104,12 +151,18 @@ class Level(val game: FruityFrankGame) {
         }
     }
 
+    class FruityInput(val level: Level) : InputAdapter() {
+        override fun keyDown(keycode: Int): Boolean {
+            if (keycode == Keys.RIGHT_BRACKET) level.throwBall()
+            return true
+        }
+    }
+
     fun throwBall() {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
 }
-
 
 
 typealias AnimationMap = Map<Direction, Animation<out TextureRegion>>
@@ -122,8 +175,11 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
             Direction.RIGHT to Animation(0.15F, rightRegions),
             Direction.LEFT to Animation(0.15F, leftRegions),
             Direction.UP to Animation(0.15F, downRegions),
-            Direction.DOWN to Animation(0.15F, downRegions))
+            Direction.DOWN to Animation(0.15F, downRegions),
+            Direction.NONE to Animation(0.15f, rightRegions[0]))
 }
+
+
 
 //646*378
 //

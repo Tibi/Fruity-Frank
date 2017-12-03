@@ -1,9 +1,11 @@
 package tibi.fruity
 
+import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
@@ -26,24 +28,26 @@ class Level(val game: FruityFrankGame) {
 
     data class IntPoint(val x: Int, val y: Int)
 
+    val bg: TextureRegion = game.atlas.findRegion("backgrounds/level1")
+    val header: TextureRegion = game.atlas.findRegion("backgrounds/header")
     val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val monsters = ArrayList<Perso>()
     val blackBlocks = HashSet<IntPoint>()
+    val black = game.atlas.findRegion("backgrounds/black")
+    val blackHigh = game.atlas.findRegion("backgrounds/black_high")
+    val gate = game.atlas.findRegion("backgrounds/gate")
     var speedMult = 100f
-    val black: TextureRegion
-    val gate: TextureRegion
 
     init {
-        black = game.atlas.findRegion("backgrounds/black")
+        bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
-        horizLine(6)
-        gate = game.atlas.findRegion("backgrounds/gate")
+        blackCross(6, 6)
 
-        val guy = Perso(this, createAnimations(game.atlas, "guy/"), 1, 3)
+        val guy = Monster(this, createAnimations(game.atlas, "guy/"), 1, 3)
         monsters.add(guy)
         guy.move(Direction.RIGHT)
-        val prune = Perso(this, createAnimations(game.atlas, "prune/"), 5, 5)
+        val prune = Monster(this, createAnimations(game.atlas, "prune/"), 5, 5)
         monsters.add(prune)
         prune.move(Direction.UP)
 
@@ -57,9 +61,13 @@ class Level(val game: FruityFrankGame) {
     }
 
     fun render(batch: SpriteBatch, deltaTime: Float) {
+        TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+        batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
         for (blackBlock in blackBlocks) {
-            batch.draw(black, CELL_WIDTH * blackBlock.x, CELL_HEIGHT * blackBlock.y)
+            val tex = if (blackBlock.y == GRID_HEIGHT - 1) black else blackHigh
+            batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
         }
+        batch.draw(gate, GridItem.gridX2x(6), GridItem.gridY2y(6))
         if (monsters[0].xSpeed == 0f) {
             monsters[0].move(Direction.RIGHT)
         }
@@ -87,9 +95,12 @@ class Level(val game: FruityFrankGame) {
         }
     }
 
-    fun horizLine(y: Int) {
-        for (x in 0 until GRID_WIDTH) {
-            blackBlocks.add(IntPoint(x, y))
+    fun blackCross(x: Int, y: Int) {
+        for (x1 in 0 until GRID_WIDTH) {
+            blackBlocks.add(IntPoint(x1, y))
+        }
+        for (y1 in 0 until GRID_HEIGHT) {
+            blackBlocks.add(IntPoint(x, y1))
         }
     }
 
@@ -101,18 +112,17 @@ class Level(val game: FruityFrankGame) {
 
 
 
-typealias AnimationMap = Map<Perso.State, Animation<out TextureRegion>>
+typealias AnimationMap = Map<Direction, Animation<out TextureRegion>>
 
 fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
     val leftRegions = atlas.findRegions(name + "right")
     val rightRegions = com.badlogic.gdx.utils.Array(leftRegions.map { TextureRegion(it).apply { it.flip(true, false) } }.toTypedArray())
     val downRegions = atlas.findRegions(name + "down")
     return mapOf(
-            Perso.State.RIGHT to Animation(0.15F, rightRegions),
-            Perso.State.LEFT to Animation(0.15F, leftRegions),
-            Perso.State.UP to Animation(0.15F, downRegions),
-            Perso.State.DOWN to Animation(0.15F, downRegions),
-            Perso.State.IDLE to Animation(1F, rightRegions[0]))
+            Direction.RIGHT to Animation(0.15F, rightRegions),
+            Direction.LEFT to Animation(0.15F, leftRegions),
+            Direction.UP to Animation(0.15F, downRegions),
+            Direction.DOWN to Animation(0.15F, downRegions))
 }
 
 //646*378

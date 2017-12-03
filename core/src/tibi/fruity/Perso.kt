@@ -7,34 +7,31 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 
 open class GridItem(val level: Level, var gridX: Int, var gridY: Int) {
 
-    var x = 0F
-    var y = 0F
+    var x = 0f
+    var y = 0f
     var xSpeed = 0f
     var ySpeed = 0f
 
     init {
-        x = gridX2x()
-        y = gridY2y()
+        x = Companion.gridX2x(gridX)
+        y = Companion.gridY2y(gridY)
     }
-
-    private fun gridY2y() = GRID_START_Y + gridY * (CELL_HEIGHT + GRID_MARGIN)
-
-    private fun gridX2x() = GRID_START_X + gridX * CELL_WIDTH
-
 
     open fun update(deltaTime: Float) {
         if (xSpeed != 0f) {
             x += xSpeed * deltaTime
-            if (xSpeed > 0 && x >= gridX2x()
-                    || xSpeed < 0 && x <= gridX2x()) {
+            if (xSpeed > 0 && x >= gridX2x(gridX)
+                    || xSpeed < 0 && x <= gridX2x(gridX)) {
+                x = gridX2x(gridX)
                 xSpeed = 0f
             }
         }
         if (ySpeed != 0f) {
             y += ySpeed * deltaTime
-            if (ySpeed > 0 && y >= gridY2y()
-                    || ySpeed < 0 && y <= gridY2y()) {
+            if (ySpeed > 0 && y >= gridY2y(gridY)
+                    || ySpeed < 0 && y <= gridY2y(gridY)) {
                 ySpeed = 0f
+                y = gridY2y(gridY)
             }
         }
     }
@@ -65,26 +62,23 @@ open class GridItem(val level: Level, var gridX: Int, var gridY: Int) {
         update(deltaTime)
     }
 
-    fun collides(other: GridItem) = x in other.x-CELL_WIDTH   .. other.x+CELL_WIDTH
-                                 && y in other.y- CELL_HEIGHT .. other.y+ CELL_HEIGHT
+    fun collides(other: GridItem) = x in other.x-CELL_WIDTH+1   .. other.x+CELL_WIDTH-1
+                                 && y in other.y- CELL_HEIGHT   .. other.y+ CELL_HEIGHT
+
+    companion object {
+        fun gridY2y(gridY: Int) = GRID_START_Y + gridY * (CELL_HEIGHT + GRID_MARGIN)
+        fun gridX2x(gridX: Int) = GRID_START_X + gridX * CELL_WIDTH
+    }
 }
 
 
-open class Perso(level: Level, val anims: Map<State, Animation<out TextureRegion>>, gridX: Int, gridY: Int)
+open class Perso(level: Level, val anims: AnimationMap, gridX: Int, gridY: Int)
     : GridItem(level, gridX, gridY) {
 
-    enum class State { IDLE, RIGHT, LEFT, UP, DOWN, FALLING;
-        companion object {
-            fun fromDirection(dir: Direction): State = when (dir) {
-                Direction.UP -> UP
-                Direction.DOWN -> DOWN
-                Direction.LEFT -> LEFT
-                Direction.RIGHT -> RIGHT
-            }
-        }
-    }
+    enum class State { IDLE, MOVING, FALLING }
 
     var state = State.IDLE
+    var direction = Direction.RIGHT
 
     init {
         anims.values.forEach { it.playMode = Animation.PlayMode.LOOP }
@@ -102,7 +96,7 @@ open class Perso(level: Level, val anims: Map<State, Animation<out TextureRegion
 
     override fun render(batch: SpriteBatch, deltaTime: Float) {
         super.render(batch, deltaTime)
-        val anim = anims[state]
+        val anim = anims[direction]
 //        println("$state -> $anim")
         if (anim != null) {
             batch.draw(anim.getKeyFrame(stateTime), x, y)
@@ -111,7 +105,7 @@ open class Perso(level: Level, val anims: Map<State, Animation<out TextureRegion
 
     override fun move(dir: Direction) {
         super.move(dir)
-        state = State.fromDirection(dir)
+        state = State.MOVING
     }
 }
 
@@ -123,3 +117,10 @@ class Fruit(level: Level, val textureRegion: TextureRegion, gridX: Int, gridY: I
 }
 
 class Frank(level: Level, atlas: TextureAtlas) : Perso(level, createAnimations(atlas, "frank/ball "), 0, 0)
+
+class Monster(level: Level, anims: AnimationMap, x: Int, y: Int) : Perso(level, anims, x, y) {
+    override fun update(deltaTime: Float) {
+
+        super.update(deltaTime)
+    }
+}

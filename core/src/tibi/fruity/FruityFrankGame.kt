@@ -6,11 +6,8 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
-import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.graphics.g2d.TextureRegion
-import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import java.util.*
 
 
@@ -20,8 +17,6 @@ class FruityFrankGame : ApplicationAdapter() {
     lateinit var frank: Perso
 
     lateinit var atlas: TextureAtlas
-    lateinit var bg: TextureRegion
-    lateinit var header: TextureRegion
     lateinit var level: Level
 
     val cam = OrthographicCamera()
@@ -35,10 +30,6 @@ class FruityFrankGame : ApplicationAdapter() {
 
         level = Level(this)
 
-        header = atlas.findRegion("backgrounds/header")
-        bg = atlas.findRegion("backgrounds/level1")
-        bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
-
         Gdx.input.inputProcessor = FruityInput(this)
     }
 
@@ -50,18 +41,16 @@ class FruityFrankGame : ApplicationAdapter() {
         batch.begin()
         batch.disableBlending()
 
-        TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
-        batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
         level.render(batch, Gdx.graphics.deltaTime)
 
         batch.end()
     }
 
     private fun processInput() {
-        if (isKeyPressed(Keys.X, Keys.RIGHT)) level.movePlayer(Direction.RIGHT)
-        if (isKeyPressed(Keys.Z, Keys.LEFT)) level.movePlayer(Direction.LEFT)
-        if (isKeyPressed(Keys.SEMICOLON, Keys.UP)) level.movePlayer(Direction.UP)
-        if (isKeyPressed(Keys.PERIOD, Keys.DOWN)) level.movePlayer(Direction.DOWN)
+        if (isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)) level.movePlayer(Direction.RIGHT)
+        if (isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)) level.movePlayer(Direction.LEFT)
+        if (isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP)) level.movePlayer(Direction.UP)
+        if (isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)) level.movePlayer(Direction.DOWN)
     }
 
     private fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }

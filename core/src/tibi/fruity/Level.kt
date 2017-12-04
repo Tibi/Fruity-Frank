@@ -58,11 +58,11 @@ class Level(private val game: FruityFrankGame) : Screen {
         blackCross(6, 6)
 
         val guy = Monster(this, createAnimations(game.atlas, "guy/"), 1, 3)
-//        monsters.add(guy)
-//        guy.move(Direction.RIGHT)
+        monsters.add(guy)
+        guy.xSpeed = 10f
         val prune = Monster(this, createAnimations(game.atlas, "prune/"), 5, 5)
-//        monsters.add(prune)
-//        prune.move(Direction.UP)
+        monsters.add(prune)
+        prune.ySpeed = 20f
 
         val cherry = game.atlas.findRegion("fruits/cherry")
         fruits.addAll(List(10, { _ -> Fruit(this, cherry,
@@ -175,8 +175,7 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
             Direction.RIGHT to Animation(0.15F, rightRegions),
             Direction.LEFT to Animation(0.15F, leftRegions),
             Direction.UP to Animation(0.15F, downRegions),
-            Direction.DOWN to Animation(0.15F, downRegions),
-            Direction.NONE to Animation(0.15f, rightRegions[0]))
+            Direction.DOWN to Animation(0.15F, downRegions))
 }
 
 

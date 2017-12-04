@@ -111,12 +111,13 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
 }
 
 
-open class Perso(level: Level, val anims: AnimationMap, gridX: Int, gridY: Int)
-    : GridItem(level, gridX, gridY) {
+open class Perso(level: Level, val anims: AnimationMap, gridX: Int, gridY: Int) : GridItem(level, gridX, gridY) {
 
     enum class State { IDLE, MOVING, FALLING, STOPPING }
 
     var state = State.IDLE
+
+    var lastFrame: TextureRegion? = anims[Direction.RIGHT]?.getKeyFrame(0f)
 
     init {
         anims.values.forEach { it.playMode = Animation.PlayMode.LOOP }
@@ -131,10 +132,10 @@ open class Perso(level: Level, val anims: AnimationMap, gridX: Int, gridY: Int)
 
     override fun render(batch: SpriteBatch) {
         val anim = anims[direction]
-//        println("$state -> $anim")
         if (anim != null) {
-            batch.draw(anim.getKeyFrame(stateTime), x, y)
+            lastFrame = anim.getKeyFrame(stateTime)
         }
+        batch.draw(lastFrame, x, y)
     }
 }
 

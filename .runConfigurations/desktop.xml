@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="desktop" type="Application" factoryName="Application">
+  <configuration default="false" name="desktop" type="Application" factoryName="Application" singleton="true">
     <extension name="coverage" enabled="false" merge="false" />
     <option name="MAIN_CLASS_NAME" value="tibi.fruity.desktop.DesktopLauncher" />
     <option name="VM_PARAMETERS" value="-XXaltjvm=dcevm -javaagent:&quot;C:\Program Files\Java\hotswap-agent-1.1.0-SNAPSHOT.jar&quot;" />

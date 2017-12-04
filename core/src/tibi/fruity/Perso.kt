@@ -89,10 +89,10 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
         xSpeed = 0f
         ySpeed = 0f
         when (direction) {
-            Direction.RIGHT -> xSpeed =  level.speedMult
-            Direction.UP    -> ySpeed =  level.speedMult
-            Direction.LEFT  -> xSpeed = -level.speedMult
-            Direction.DOWN  -> ySpeed = -level.speedMult
+            Direction.RIGHT -> xSpeed =  level.speed
+            Direction.UP    -> ySpeed =  level.speed
+            Direction.LEFT  -> xSpeed = -level.speed
+            Direction.DOWN  -> ySpeed = -level.speed
             Direction.NONE  -> {}
         }
     }

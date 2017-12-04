@@ -43,10 +43,12 @@ class Level(private val game: FruityFrankGame) : Screen {
     private val blackBlocks = HashSet<IntPoint>()
     private val black = game.atlas.findRegion("backgrounds/black")
     private val blackHigh = game.atlas.findRegion("backgrounds/black_high")
-    private val gate = game.atlas.findRegion("backgrounds/gate")
+    private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), Animation.PlayMode.LOOP)
+    private var stateTime: Float = 0f
 
-    var speedMult = 100f
+    var speed = 100f
     private var score: Int = 0
+
 
     val cam = OrthographicCamera()
 
@@ -59,10 +61,10 @@ class Level(private val game: FruityFrankGame) : Screen {
 
         val guy = Monster(this, createAnimations(game.atlas, "guy/"), 1, 3)
         monsters.add(guy)
-        guy.xSpeed = 10f
+        guy.xSpeed = speed
         val prune = Monster(this, createAnimations(game.atlas, "prune/"), 5, 5)
         monsters.add(prune)
-        prune.ySpeed = 20f
+        prune.ySpeed = speed * 1.5f
 
         val cherry = game.atlas.findRegion("fruits/cherry")
         fruits.addAll(List(10, { _ -> Fruit(this, cherry,
@@ -80,6 +82,7 @@ class Level(private val game: FruityFrankGame) : Screen {
 
     override fun render(deltaTime: Float) {
         update(deltaTime)
+        stateTime += deltaTime
         
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         game.batch.projectionMatrix = cam.combined
@@ -96,7 +99,9 @@ class Level(private val game: FruityFrankGame) : Screen {
             game.batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
         }
         // Monster gate
-        game.batch.draw(gate, GridItem.gridX2x(6), GridItem.gridY2y(6))
+        val keyFrame = gate.getKeyFrame(stateTime)
+        println(keyFrame.index)
+        game.batch.draw(keyFrame, GridItem.gridX2x(6), GridItem.gridY2y(6))
 
         player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
@@ -138,7 +143,7 @@ class Level(private val game: FruityFrankGame) : Screen {
             score += fruitsCol.map { it.points }.sum()
             println("MIAM niam + $score")
             fruits.removeAll(fruitsCol)
-            speedMult += 10
+            speed += 10
         }
     }
 

@@ -16,7 +16,7 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
     var nextDirection = Direction.NONE
 
     val gridX get() = x2gridX(x)
-    val gridY get() = y2gridY(x)
+    val gridY get() = y2gridY(y)
 
     init {
         x = gridX2x(gridX)
@@ -34,6 +34,7 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
                 Direction.LEFT, Direction.RIGHT -> {
                     val gridXAfter = x2gridX(x + xSpeed * deltaTime)
                     if (gridX != gridXAfter) {
+                        x = gridX2x(if (xSpeed < 0) gridX else gridXAfter)
                         direction = nextDirection
                         setSpeed()
                     }
@@ -41,6 +42,7 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
                 Direction.UP, Direction.DOWN -> {
                     val gridYAfter = y2gridY(y + ySpeed * deltaTime)
                     if (gridY != gridYAfter) {
+                        y = gridY2y(if (ySpeed < 0) gridY else gridYAfter)
                         direction = nextDirection
                         setSpeed()
                     }
@@ -51,18 +53,36 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
         x += xSpeed * deltaTime
         y += ySpeed * deltaTime
 
-        // Prevents running off grip
+        // Prevents running off grid
         if (xSpeed > 0) {
             val maxX = gridX2x(GRID_WIDTH - 1)
-            if (x > maxX) x = maxX
+            if (x > maxX) {
+                x = maxX
+                stop()
+            }
         }
-        else if (xSpeed < 0 && x < GRID_START_X) x = GRID_START_X
+        else if (xSpeed < 0 && x < GRID_START_X) {
+            x = GRID_START_X
+            stop()
+        }
 
         if (ySpeed > 0) {
             val maxY = gridY2y(GRID_HEIGHT - 1)
-            if (y > maxY) y = maxY
+            if (y > maxY) {
+                y = maxY
+                stop()
+            }
         }
-        else if (ySpeed < 0 && y < GRID_START_Y) y = GRID_START_Y
+        else if (ySpeed < 0 && y < GRID_START_Y) {
+            y = GRID_START_Y
+            stop()
+        }
+    }
+
+    fun stop() {
+        xSpeed = 0f
+        ySpeed = 0f
+        direction = Direction.NONE
     }
 
     open fun setSpeed() {

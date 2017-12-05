@@ -8,11 +8,15 @@ import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
+import com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.MathUtils.random
+import com.badlogic.gdx.math.MathUtils.randomBoolean
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
+import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import com.badlogic.gdx.utils.Array as GdxArray
-
 
 const val SCREEN_WIDTH = 649F // was 646 in original game, 3 columns were only 40 px wide
 const val SCREEN_HEIGHT = 378F
@@ -43,8 +47,13 @@ class Level(private val game: FruityFrankGame) : Screen {
     private val blackBlocks = HashSet<IntPoint>()
     private val black = game.atlas.findRegion("backgrounds/black")
     private val blackHigh = game.atlas.findRegion("backgrounds/black_high")
-    private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), Animation.PlayMode.LOOP)
+    private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
+    val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
+
+    val MONSTER_SPAWN_RATE = 2  // in seconds between monster spawn
+
     private var stateTime: Float = 0f
+    private var monsterSpawnStateTime = 0f
 
     var speed = 100f
     private var score: Int = 0
@@ -57,24 +66,23 @@ class Level(private val game: FruityFrankGame) : Screen {
 
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
-        blackCross(6, 6)
-
-        val guy = Monster(this, createAnimations(game.atlas, "guy/"), 1, 3)
-        monsters.add(guy)
-        guy.xSpeed = speed
-        val prune = Monster(this, createAnimations(game.atlas, "prune/"), 5, 5)
-        monsters.add(prune)
-        prune.ySpeed = speed * 1.5f
+        blackCross(gatePos)
 
         val cherry = game.atlas.findRegion("fruits/cherry")
         fruits.addAll(List(10, { _ -> Fruit(this, cherry,
-                game.rand(0, GRID_WIDTH), game.rand(0, GRID_HEIGHT), 10) }))
+                IntPoint(MathUtils.random(0, GRID_WIDTH-1), MathUtils.random(0, GRID_HEIGHT-1)), 10) }))
         Gdx.input.inputProcessor = FruityInput(this)
     }
 
     fun update(deltaTime: Float) {
         processInput()
         detectCollisions()
+        stateTime += deltaTime
+        monsterSpawnStateTime += deltaTime
+        if (monsterSpawnStateTime > MONSTER_SPAWN_RATE) {
+            spawnMonster()
+            monsterSpawnStateTime = 0f
+        }
         player.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
@@ -82,8 +90,7 @@ class Level(private val game: FruityFrankGame) : Screen {
 
     override fun render(deltaTime: Float) {
         update(deltaTime)
-        stateTime += deltaTime
-        
+
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         game.batch.projectionMatrix = cam.combined
         game.batch.begin()
@@ -99,9 +106,7 @@ class Level(private val game: FruityFrankGame) : Screen {
             game.batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
         }
         // Monster gate
-        val keyFrame = gate.getKeyFrame(stateTime)
-        println(keyFrame.index)
-        game.batch.draw(keyFrame, GridItem.gridX2x(6), GridItem.gridY2y(6))
+        game.batch.draw(gate.getKeyFrame(stateTime), GridItem.gridX2x(gatePos.x), GridItem.gridY2y(gatePos.y))
 
         player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
@@ -147,18 +152,29 @@ class Level(private val game: FruityFrankGame) : Screen {
         }
     }
 
-    private fun blackCross(x: Int, y: Int) {
-        for (x1 in 0 until GRID_WIDTH) {
-            blackBlocks.add(IntPoint(x1, y))
+    private fun blackCross(pt: IntPoint) {
+        for (x in 0 until GRID_WIDTH) {
+            blackBlocks.add(IntPoint(x, pt.y))
         }
-        for (y1 in 0 until GRID_HEIGHT) {
-            blackBlocks.add(IntPoint(x, y1))
+        for (y in 0 until GRID_HEIGHT) {
+            blackBlocks.add(IntPoint(pt.x, y))
         }
+    }
+
+    fun spawnMonster() {
+        val monster = if (randomBoolean()) {
+            Monster(this, createAnimations(game.atlas, "guy/"), gatePos, 0.7f)
+        } else {
+            Monster(this, createAnimations(game.atlas, "prune/"), gatePos, 1f)
+        }
+        monsters.add(monster)
+        monster.move(Direction.values()[random(1, 4)])
     }
 
     class FruityInput(val level: Level) : InputAdapter() {
         override fun keyDown(keycode: Int): Boolean {
             if (keycode == Keys.RIGHT_BRACKET) level.throwBall()
+            else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.game) }
             return true
         }
     }
@@ -170,17 +186,17 @@ class Level(private val game: FruityFrankGame) : Screen {
 }
 
 
-typealias AnimationMap = Map<Direction, Animation<out TextureRegion>>
+typealias AnimationMap = Map<Direction, Animation<out AtlasRegion>>
 
 fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
     val leftRegions = atlas.findRegions(name + "right")
-    val rightRegions = com.badlogic.gdx.utils.Array(leftRegions.map { TextureRegion(it).apply { it.flip(true, false) } }.toTypedArray())
+    val rightRegions = GdxArray(leftRegions.map { AtlasRegion(it).apply { it.flip(true, false) } }.toTypedArray())
     val downRegions = atlas.findRegions(name + "down")
     return mapOf(
-            Direction.RIGHT to Animation(0.15F, rightRegions),
-            Direction.LEFT to Animation(0.15F, leftRegions),
-            Direction.UP to Animation(0.15F, downRegions),
-            Direction.DOWN to Animation(0.15F, downRegions))
+            Direction.RIGHT to Animation(0.15F, rightRegions, LOOP),
+            Direction.LEFT to Animation(0.15F, leftRegions, LOOP),
+            Direction.UP to Animation(0.15F, downRegions, LOOP),
+            Direction.DOWN to Animation(0.15F, downRegions, LOOP))
 }
 
 

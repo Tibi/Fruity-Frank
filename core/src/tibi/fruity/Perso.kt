@@ -1,11 +1,12 @@
 package tibi.fruity
 
-import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import tibi.fruity.Level.IntPoint
 
-abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
+abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float) {
 
     var x = 0f
     var y = 0f
@@ -19,8 +20,8 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
     val gridY get() = y2gridY(y)
 
     init {
-        x = gridX2x(gridX)
-        y = gridY2y(gridY)
+        x = gridX2x(pos.x)
+        y = gridY2y(pos.y)
     }
 
     open fun update(deltaTime: Float) {
@@ -89,10 +90,10 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
         xSpeed = 0f
         ySpeed = 0f
         when (direction) {
-            Direction.RIGHT -> xSpeed =  level.speed
-            Direction.UP    -> ySpeed =  level.speed
-            Direction.LEFT  -> xSpeed = -level.speed
-            Direction.DOWN  -> ySpeed = -level.speed
+            Direction.RIGHT -> xSpeed =  level.speed * speedFactor
+            Direction.UP    -> ySpeed =  level.speed * speedFactor
+            Direction.LEFT  -> xSpeed = -level.speed * speedFactor
+            Direction.DOWN  -> ySpeed = -level.speed * speedFactor
             Direction.NONE  -> {}
         }
     }
@@ -108,21 +109,21 @@ abstract class GridItem(val level: Level, gridX: Int, gridY: Int) {
         fun x2gridX(x: Float) = ((x - GRID_START_X) / CELL_WIDTH).toInt()
         fun y2gridY(y: Float) = ((y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)).toInt()
     }
+
+    fun move(direction: Direction) {
+        this.direction = direction
+        nextDirection  = direction
+        setSpeed()
+    }
 }
 
 
-open class Perso(level: Level, val anims: AnimationMap, gridX: Int, gridY: Int) : GridItem(level, gridX, gridY) {
+open class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speedFactor: Float) : GridItem(level, pos, speedFactor) {
 
     enum class State { IDLE, MOVING, FALLING, STOPPING }
 
     var state = State.IDLE
-
-    var lastFrame: TextureRegion? = anims[Direction.RIGHT]?.getKeyFrame(0f)
-
-    init {
-        anims.values.forEach { it.playMode = Animation.PlayMode.LOOP }
-    }
-
+    var lastFrame: AtlasRegion? = anims[Direction.RIGHT]?.getKeyFrame(0f)
     var stateTime: Float = 0f
 
     override fun update(deltaTime: Float) {
@@ -139,7 +140,7 @@ open class Perso(level: Level, val anims: AnimationMap, gridX: Int, gridY: Int) 
     }
 }
 
-class Fruit(level: Level, val textureRegion: TextureRegion, gridX: Int, gridY: Int, val points: Int) : GridItem(level, gridX, gridY) {
+class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val points: Int) : GridItem(level, pos, 0f) {
     override fun render(batch: SpriteBatch) {
         batch.draw(textureRegion, x, y)
     }
@@ -149,7 +150,7 @@ class Fruit(level: Level, val textureRegion: TextureRegion, gridX: Int, gridY: I
     }
 }
 
-class Frank(level: Level, atlas: TextureAtlas) : Perso(level, createAnimations(atlas, "frank/ball "), 0, 0) {
+class Frank(level: Level, atlas: TextureAtlas) : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
     override fun update(deltaTime: Float) {
 //        if (state == State.STOPPING && onGrid()) {
 //            xSpeed = 0f
@@ -159,7 +160,7 @@ class Frank(level: Level, atlas: TextureAtlas) : Perso(level, createAnimations(a
     }
 }
 
-class Monster(level: Level, anims: AnimationMap, x: Int, y: Int) : Perso(level, anims, x, y) {
+class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
     override fun update(deltaTime: Float) {
 
         super.update(deltaTime)

@@ -32,7 +32,16 @@ const val GRID_MARGIN = 6F
 const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
 
-enum class Direction { NONE, UP, DOWN, LEFT, RIGHT}
+enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
+
+    fun reverse() = when(this) {
+        UP -> DOWN
+        DOWN -> UP
+        RIGHT -> LEFT
+        LEFT -> RIGHT
+        NONE -> NONE
+    }
+}
 
 
 class Level(private val game: FruityFrankGame) : Screen {

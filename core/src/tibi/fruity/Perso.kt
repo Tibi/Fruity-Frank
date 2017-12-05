@@ -59,34 +59,34 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
             val maxX = gridX2x(GRID_WIDTH - 1)
             if (x > maxX) {
                 x = maxX
-                stop()
+                hitWall()
             }
         }
         else if (xSpeed < 0 && x < GRID_START_X) {
             x = GRID_START_X
-            stop()
+            hitWall()
         }
 
         if (ySpeed > 0) {
             val maxY = gridY2y(GRID_HEIGHT - 1)
             if (y > maxY) {
                 y = maxY
-                stop()
+                hitWall()
             }
         }
         else if (ySpeed < 0 && y < GRID_START_Y) {
             y = GRID_START_Y
-            stop()
+            hitWall()
         }
     }
 
-    fun stop() {
+    open fun hitWall() {
         xSpeed = 0f
         ySpeed = 0f
         direction = Direction.NONE
     }
 
-    open fun setSpeed() {
+    fun setSpeed() {
         xSpeed = 0f
         ySpeed = 0f
         when (direction) {
@@ -150,19 +150,12 @@ class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val p
     }
 }
 
-class Frank(level: Level, atlas: TextureAtlas) : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
-    override fun update(deltaTime: Float) {
-//        if (state == State.STOPPING && onGrid()) {
-//            xSpeed = 0f
-//            ySpeed = 0f
-//        }
-        super.update(deltaTime)
-    }
-}
+class Frank(level: Level, atlas: TextureAtlas)
+    : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f)
+
 
 class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
-    override fun update(deltaTime: Float) {
-
-        super.update(deltaTime)
+    override fun hitWall() {
+        move(direction.reverse())
     }
 }

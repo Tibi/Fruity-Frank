@@ -99,8 +99,13 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         fun y2gridY(y: Float) = ((y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)).toInt()
     }
 
+    fun requestMove(to: Direction) {
+        nextDirection = to
+    }
+
     fun move(to: Direction) {
-        nextDirection  = to
+        direction = to
+        setSpeed()
     }
 
     fun stop() {

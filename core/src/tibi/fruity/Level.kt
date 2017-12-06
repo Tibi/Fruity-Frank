@@ -11,9 +11,7 @@ import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
-import com.badlogic.gdx.math.MathUtils
-import com.badlogic.gdx.math.MathUtils.random
-import com.badlogic.gdx.math.MathUtils.randomBoolean
+import com.badlogic.gdx.math.MathUtils.*
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import com.badlogic.gdx.utils.Array as GdxArray
@@ -44,7 +42,7 @@ enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
 }
 
 
-class Level(private val game: FruityFrankGame) : Screen {
+class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     data class IntPoint(val x: Int, val y: Int)
 
@@ -54,6 +52,7 @@ class Level(private val game: FruityFrankGame) : Screen {
     private val fruits = ArrayList<Fruit>()
     private val monsters = ArrayList<Perso>()
     private val blackBlocks = HashSet<IntPoint>()
+    private val highBlackBlocks = HashSet<IntPoint>()
     private val black = game.atlas.findRegion("backgrounds/black")
     private val blackHigh = game.atlas.findRegion("backgrounds/black_high")
     private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
@@ -72,15 +71,26 @@ class Level(private val game: FruityFrankGame) : Screen {
 
     init {
         cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
-
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         blackCross(gatePos)
 
-        val cherry = game.atlas.findRegion("fruits/cherry")
-        fruits.addAll(List(10, { _ -> Fruit(this, cherry,
-                IntPoint(MathUtils.random(0, GRID_WIDTH-1), MathUtils.random(0, GRID_HEIGHT-1)), 10) }))
+        val fruitTextures = listOf("cherry", "apple", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
+            game.atlas.findRegion("fruits/" + it)
+        }
+        for (i in 0..20) {
+            val textureIndex = randomTriangular(0f, levelNo + 1f, 0f).toInt()
+            fruits.add(Fruit(this, fruitTextures[textureIndex], randomPoint(), 10))
+        }
         Gdx.input.inputProcessor = FruityInput(this)
+    }
+
+    private fun randomPoint() : IntPoint {
+        var pt: IntPoint
+        do {
+            pt = IntPoint(random(0, GRID_WIDTH - 1), random(0, GRID_HEIGHT - 1))
+        } while (pt in blackBlocks)
+        return pt
     }
 
     fun update(deltaTime: Float) {
@@ -108,10 +118,10 @@ class Level(private val game: FruityFrankGame) : Screen {
         // Background
         TiledDrawable(bg).draw(game.batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
         // Header
-        game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-3)
+        game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-2)
         // Black paths
         for (blackBlock in blackBlocks) {
-            val tex = if (blackBlock.y == GRID_HEIGHT - 1) black else blackHigh
+            val tex = if (blackBlock in highBlackBlocks) blackHigh else black
             game.batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
         }
         // Monster gate
@@ -149,6 +159,14 @@ class Level(private val game: FruityFrankGame) : Screen {
     }
     
     private fun detectCollisions() {
+        for (monster in monsters) {
+            if (fruits.any { it.collides(monster) }) {
+                monster.move(monster.direction.reverse())
+            }
+//            if (monsters.any { it.collides(monster) }) {
+//                monster.move(monster.direction.reverse())
+//            }
+        }
         if (monsters.any { it.collides(player) }) {
             println("DEAD")
         }
@@ -163,14 +181,23 @@ class Level(private val game: FruityFrankGame) : Screen {
 
     private fun blackCross(pt: IntPoint) {
         for (x in 0 until GRID_WIDTH) {
-            blackBlocks.add(IntPoint(x, pt.y))
+            val block = IntPoint(x, pt.y)
+            blackBlocks.add(block)
+            highBlackBlocks.add(block)
         }
         for (y in 0 until GRID_HEIGHT) {
-            blackBlocks.add(IntPoint(pt.x, y))
+            val block = IntPoint(pt.x, y)
+            blackBlocks.add(block)
+            if (y < GRID_HEIGHT - 1) {
+                highBlackBlocks.add(block)
+            }
         }
     }
 
     fun spawnMonster() {
+        if (monsters.size > 3 + levelNo) {
+            return
+        }
         val monster = if (randomBoolean()) {
             Monster(this, createAnimations(game.atlas, "guy/"), gatePos, 0.7f)
         } else {
@@ -183,7 +210,7 @@ class Level(private val game: FruityFrankGame) : Screen {
     class FruityInput(val level: Level) : InputAdapter() {
         override fun keyDown(keycode: Int): Boolean {
             if (keycode == Keys.RIGHT_BRACKET) level.throwBall()
-            else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.game) }
+            else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
             return true
         }
     }
@@ -192,17 +219,23 @@ class Level(private val game: FruityFrankGame) : Screen {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun dig(gridX: Int, gridY: Int) {
-        blackBlocks.add(IntPoint(gridX, gridY))
+    fun dig(pt: IntPoint, direction: Direction) {
+        blackBlocks.add(pt)
+        if (direction == Direction.DOWN || direction == Direction.UP && pt.y < GRID_HEIGHT-1) {
+            highBlackBlocks.add(pt)
+        }
     }
 
     fun getDirectionsOnPath(p: IntPoint) : Set<Direction> {
         val res = HashSet<Direction>(4)
+        highBlackBlocks.forEach { hBlock ->
+            if (hBlock == p) res.add(Direction.UP)
+            if (hBlock.y == p.y - 1 && hBlock.x == p.x) res.add(Direction.DOWN)
+        }
         blackBlocks.forEach {block ->
             if (block.y == p.y && block.x == p.x + 1) res.add(Direction.RIGHT)
             if (block.y == p.y && block.x == p.x - 1) res.add(Direction.LEFT)
-            if (block.y == p.y + 1 && block.x == p.x) res.add(Direction.UP)
-            if (block.y == p.y - 1 && block.x == p.x) res.add(Direction.DOWN)
+
         }
         return res
     }

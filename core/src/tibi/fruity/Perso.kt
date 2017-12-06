@@ -166,7 +166,11 @@ class Frank(level: Level, atlas: TextureAtlas)
     }
 
     override fun gridLinePassed() {
-        level.dig(gridX, gridY)
+        when (direction) {
+            Direction.LEFT -> level.dig(IntPoint(gridX+1, gridY), direction)
+            Direction.DOWN -> level.dig(IntPoint(gridX, gridY+1), direction)
+            else -> level.dig(IntPoint(gridX, gridY), direction)
+        }
     }
 }
 

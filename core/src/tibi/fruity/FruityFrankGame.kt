@@ -13,7 +13,7 @@ class FruityFrankGame : Game() {
     override fun create() {
         batch = SpriteBatch()
         atlas = TextureAtlas("main.atlas")
-        screen = Level(this)
+        screen = Level(1, this)
     }
 
     override fun dispose() {

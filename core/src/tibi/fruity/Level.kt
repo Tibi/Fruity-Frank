@@ -196,6 +196,17 @@ class Level(private val game: FruityFrankGame) : Screen {
         blackBlocks.add(IntPoint(gridX, gridY))
     }
 
+    fun getDirectionsOnPath(p: IntPoint) : Set<Direction> {
+        val res = HashSet<Direction>(4)
+        blackBlocks.forEach {block ->
+            if (block.y == p.y && block.x == p.x + 1) res.add(Direction.RIGHT)
+            if (block.y == p.y && block.x == p.x - 1) res.add(Direction.LEFT)
+            if (block.y == p.y + 1 && block.x == p.x) res.add(Direction.UP)
+            if (block.y == p.y - 1 && block.x == p.x) res.add(Direction.DOWN)
+        }
+        return res
+    }
+
 }
 
 

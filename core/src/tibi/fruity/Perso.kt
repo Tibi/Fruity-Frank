@@ -50,6 +50,12 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
 
     open fun gridLinePassed() { }
 
+    fun getNextGridPos(): IntPoint {
+        if (xSpeed > 0f && gridX < GRID_WIDTH - 1) return IntPoint(gridX + 1, gridY)
+        if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) return IntPoint(gridX, gridY + 1)
+        return IntPoint(gridX, gridY)
+    }
+
     /** Moves x or y to the start of the grid line it is about to pass. */
     private fun moveToGrid() {
         if (xSpeed > 0f && gridX < GRID_WIDTH - 1) x = gridX2x(gridX + 1)
@@ -171,7 +177,8 @@ class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Flo
     }
 
     override fun getNewDirection(): Direction {
-        // TODO explore black paths
-        return direction
+        val onPath = level.getDirectionsOnPath(getNextGridPos())
+        val noReverse = onPath.filter { it != direction.reverse() }
+        return if (noReverse.isEmpty()) onPath.first() else noReverse.shuffled()[0]
     }
 }

@@ -129,11 +129,11 @@ class Level(private val game: FruityFrankGame) : Screen {
 
     fun processInput() {
         when {
-            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT) -> player.nextDirection = Direction.RIGHT
-            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT) -> player.nextDirection = Direction.LEFT
-            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) -> player.nextDirection = Direction.UP
-            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN) -> player.nextDirection = Direction.DOWN
-            else -> player.nextDirection = Direction.NONE
+            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT) -> player.move(Direction.RIGHT)
+            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT) -> player.move(Direction.LEFT)
+            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) -> player.move(Direction.UP)
+            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN) -> player.move(Direction.DOWN)
+            else -> player.move(Direction.NONE)
         }
     }
 

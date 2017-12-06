@@ -25,66 +25,48 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     }
 
     open fun update(deltaTime: Float) {
-        // Changes direction if requested and if item just passed a grid line
-        if (nextDirection != direction) {
-            when (direction) {
-                Direction.NONE -> {
-                    direction = nextDirection
-                    setSpeed()
-                }
-                Direction.LEFT, Direction.RIGHT -> {
-                    val gridXAfter = x2gridX(x + xSpeed * deltaTime)
-                    if (gridX != gridXAfter) {
-                        x = gridX2x(if (xSpeed < 0) gridX else gridXAfter)
-                        direction = nextDirection
-                        setSpeed()
-                    }
-                }
-                Direction.UP, Direction.DOWN -> {
-                    val gridYAfter = y2gridY(y + ySpeed * deltaTime)
-                    if (gridY != gridYAfter) {
-                        y = gridY2y(if (ySpeed < 0) gridY else gridYAfter)
-                        direction = nextDirection
-                        setSpeed()
-                    }
-                }
+        // Changes direction if requested and if item about to pass a grid line
+        if (aboutToPassGridLine(deltaTime)) {
+            val newDirection = getNewDirection()
+            if (newDirection != direction) {
+                direction = newDirection
+                moveToGrid()
+                setSpeed()
             }
+        }
+        // Prevents running off grid
+        if (aboutToHitWall(deltaTime)) {
+            hitWall()
         }
         // Move according to speed
         x += xSpeed * deltaTime
         y += ySpeed * deltaTime
-
-        // Prevents running off grid
-        if (xSpeed > 0) {
-            val maxX = gridX2x(GRID_WIDTH - 1)
-            if (x > maxX) {
-                x = maxX
-                hitWall()
-            }
-        }
-        else if (xSpeed < 0 && x < GRID_START_X) {
-            x = GRID_START_X
-            hitWall()
-        }
-
-        if (ySpeed > 0) {
-            val maxY = gridY2y(GRID_HEIGHT - 1)
-            if (y > maxY) {
-                y = maxY
-                hitWall()
-            }
-        }
-        else if (ySpeed < 0 && y < GRID_START_Y) {
-            y = GRID_START_Y
-            hitWall()
-        }
     }
 
-    open fun hitWall() {
-        xSpeed = 0f
-        ySpeed = 0f
-        direction = Direction.NONE
+    /** Moves x or y to the start of the grid line it is about to pass. */
+    private fun moveToGrid() {
+        if (xSpeed > 0f && gridX < GRID_WIDTH - 1) x = gridX2x(gridX + 1)
+        if (xSpeed < 0f) x = gridX2x(gridX)
+        if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) y = gridY2y(gridY + 1)
+        if (ySpeed < 0f) y = gridY2y(gridY)
     }
+
+    private fun aboutToPassGridLine(deltaTime: Float): Boolean =
+            when (direction) {
+                Direction.NONE -> true
+                Direction.LEFT, Direction.RIGHT -> gridX != x2gridX(x + xSpeed * deltaTime)
+                Direction.UP  , Direction.DOWN  -> gridY != y2gridY(y + ySpeed * deltaTime)
+            }
+
+    private fun aboutToHitWall(deltaTime: Float): Boolean =
+                   xSpeed > 0 && x + xSpeed * deltaTime > gridX2x(GRID_WIDTH - 1)
+                || xSpeed < 0 && x + xSpeed * deltaTime < GRID_START_X
+                || ySpeed > 0 && y + ySpeed * deltaTime > gridY2y(GRID_HEIGHT - 1)
+                || ySpeed < 0 && y + ySpeed * deltaTime < GRID_START_Y
+
+    open fun getNewDirection() = nextDirection
+
+    abstract fun hitWall()
 
     fun setSpeed() {
         xSpeed = 0f
@@ -110,15 +92,20 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         fun y2gridY(y: Float) = ((y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)).toInt()
     }
 
-    fun move(direction: Direction) {
-        this.direction = direction
-        nextDirection  = direction
+    fun move(to: Direction) {
+        nextDirection  = to
+    }
+
+    fun stop() {
+        direction = Direction.NONE
+        nextDirection = Direction.NONE
+        moveToGrid()
         setSpeed()
     }
 }
 
 
-open class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speedFactor: Float) : GridItem(level, pos, speedFactor) {
+abstract class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speedFactor: Float) : GridItem(level, pos, speedFactor) {
 
     enum class State { IDLE, MOVING, FALLING, STOPPING }
 
@@ -148,14 +135,27 @@ class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val p
     override fun update(deltaTime: Float) {
         // Not moving or animating
     }
+
+    override fun hitWall() {
+
+    }
 }
 
 class Frank(level: Level, atlas: TextureAtlas)
-    : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f)
+    : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
+    override fun hitWall() {
+        stop()
+    }
+}
 
 
 class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
     override fun hitWall() {
         move(direction.reverse())
+    }
+
+    override fun getNewDirection(): Direction {
+        // TODO explore black paths
+        return direction
     }
 }

@@ -192,6 +192,10 @@ class Level(private val game: FruityFrankGame) : Screen {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    fun dig(gridX: Int, gridY: Int) {
+        blackBlocks.add(IntPoint(gridX, gridY))
+    }
+
 }
 
 

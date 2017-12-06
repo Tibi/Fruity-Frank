@@ -25,8 +25,10 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     }
 
     open fun update(deltaTime: Float) {
+        var passed = false
         // Changes direction if requested and if item about to pass a grid line
         if (aboutToPassGridLine(deltaTime)) {
+            passed = true
             val newDirection = getNewDirection()
             if (newDirection != direction) {
                 direction = newDirection
@@ -41,7 +43,12 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         // Move according to speed
         x += xSpeed * deltaTime
         y += ySpeed * deltaTime
+        if (passed) {
+            gridLinePassed()
+        }
     }
+
+    open fun gridLinePassed() { }
 
     /** Moves x or y to the start of the grid line it is about to pass. */
     private fun moveToGrid() {
@@ -145,6 +152,10 @@ class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
     override fun hitWall() {
         stop()
+    }
+
+    override fun gridLinePassed() {
+        level.dig(gridX, gridY)
     }
 }
 

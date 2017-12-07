@@ -24,6 +24,8 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         y = gridY2y(pos.y)
     }
 
+    fun pos() = IntPoint(gridX, gridY)
+
     open fun update(deltaTime: Float) {
         var passed = false
         // Changes direction if requested and if item about to pass a grid line
@@ -145,7 +147,7 @@ abstract class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speed
     }
 }
 
-class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val points: Int) : GridItem(level, pos, 0f) {
+open class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val score: Int) : GridItem(level, pos, 0f) {
     override fun render(batch: SpriteBatch) {
         batch.draw(textureRegion, x, y)
     }
@@ -157,6 +159,25 @@ class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val p
     override fun hitWall() {
 
     }
+}
+
+class Apple(level: Level, pos: IntPoint) : Fruit(level, level.appleTex, pos, 0) {
+
+    enum class AppleState { IDLE, PUSHED, FALLING, CRASHING }
+    var state = AppleState.IDLE
+
+    fun isFalling() = state == AppleState.FALLING
+
+    override fun update(deltaTime: Float) {
+        // IDLE
+        // above black => fall slowly
+        // above high black => fall
+
+        // FALLING
+        //
+        super.update(deltaTime)
+    }
+
 }
 
 class Frank(level: Level, atlas: TextureAtlas)
@@ -172,10 +193,14 @@ class Frank(level: Level, atlas: TextureAtlas)
             else -> level.dig(IntPoint(gridX, gridY), direction)
         }
     }
+
+    fun die() {
+        println("DEAD")
+    }
 }
 
 
-class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
+open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
     override fun hitWall() {
         move(direction.reverse())
     }

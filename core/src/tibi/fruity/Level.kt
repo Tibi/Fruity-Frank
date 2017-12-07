@@ -50,11 +50,13 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val header = game.atlas.findRegion("backgrounds/header")
     private val player = Frank(this, game.atlas)
     private val fruits = ArrayList<Fruit>()
+    private val apples = ArrayList<Apple>()
     private val monsters = ArrayList<Perso>()
     private val blackBlocks = HashSet<IntPoint>()
     private val highBlackBlocks = HashSet<IntPoint>()
-    private val black = game.atlas.findRegion("backgrounds/black")
-    private val blackHigh = game.atlas.findRegion("backgrounds/black_high")
+    private val blackTex = game.atlas.findRegion("backgrounds/black")
+    private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
+    val appleTex = game.atlas.findRegion("fruits/apple")
     private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
 
@@ -75,12 +77,15 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
         blackCross(gatePos)
 
-        val fruitTextures = listOf("cherry", "apple", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
+        val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
             game.atlas.findRegion("fruits/" + it)
         }
         for (i in 0..20) {
             val textureIndex = randomTriangular(0f, levelNo + 1f, 0f).toInt()
             fruits.add(Fruit(this, fruitTextures[textureIndex], randomPoint(), 10))
+        }
+        for (i in 0..20) {
+            apples.add(Apple(this, randomPoint()))
         }
         Gdx.input.inputProcessor = FruityInput(this)
     }
@@ -89,7 +94,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         var pt: IntPoint
         do {
             pt = IntPoint(random(0, GRID_WIDTH - 1), random(0, GRID_HEIGHT - 1))
-        } while (pt in blackBlocks)
+        } while (pt in blackBlocks || pt in fruits.map { it.pos() })
         return pt
     }
 
@@ -121,7 +126,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-2)
         // Black paths
         for (blackBlock in blackBlocks) {
-            val tex = if (blackBlock in highBlackBlocks) blackHigh else black
+            val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
             game.batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
         }
         // Monster gate
@@ -168,14 +173,22 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 //            }
         }
         if (monsters.any { it.collides(player) }) {
-            println("DEAD")
+            player.die()
         }
         val fruitsCol = fruits.filter { it.collides(player) }
         if (fruitsCol.isNotEmpty()) {
-            score += fruitsCol.map { it.points }.sum()
+            score += fruitsCol.map { it.score }.sum()
             println("MIAM niam + $score")
             fruits.removeAll(fruitsCol)
             speed += 10
+        }
+        apples.filter { it.collides(player) }.forEach { apple ->
+            if (apple.isFalling()) {
+                player.die()
+            } else {
+                apple.state = Apple.AppleState.PUSHED
+                // TODO move it here?
+            }
         }
     }
 
@@ -255,14 +268,3 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
             Direction.UP to Animation(0.15F, downRegions, LOOP),
             Direction.DOWN to Animation(0.15F, downRegions, LOOP))
 }
-
-
-
-//646*378
-//
-//612*335
-//41*28
-//15*12
-//
-// top and bottom margins 7px
-//        left and right 17px

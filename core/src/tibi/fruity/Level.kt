@@ -94,7 +94,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         var pt: IntPoint
         do {
             pt = IntPoint(random(0, GRID_WIDTH - 1), random(0, GRID_HEIGHT - 1))
-        } while (pt in blackBlocks || pt in fruits.map { it.pos() })
+        } while (pt in blackBlocks || pt in fruits.map { it.pos })
         return pt
     }
 
@@ -123,7 +123,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         // Background
         TiledDrawable(bg).draw(game.batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
         // Header
-        game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-2)
+        game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
@@ -233,8 +233,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun dig(pt: IntPoint, direction: Direction) {
+        if (direction == Direction.NONE) return
+        println("dig $pt")
         blackBlocks.add(pt)
-        if (direction == Direction.DOWN || direction == Direction.UP && pt.y < GRID_HEIGHT-1) {
+        if (direction == Direction.DOWN && blackBlocks.any { it.x == pt.x && it.y == pt.y + 1 }
+                || direction == Direction.UP && pt.y < GRID_HEIGHT-1) {
             highBlackBlocks.add(pt)
         }
     }

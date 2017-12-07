@@ -24,17 +24,16 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         y = gridY2y(pos.y)
     }
 
-    fun pos() = IntPoint(gridX, gridY)
+    val pos: IntPoint get() = IntPoint(gridX, gridY)
 
     open fun update(deltaTime: Float) {
-        var passed = false
+        val passing = passingGridLine(deltaTime)
         // Changes direction if requested and if item about to pass a grid line
-        if (aboutToPassGridLine(deltaTime)) {
-            passed = true
+        if (passing || direction == Direction.NONE) {
             val newDirection = getNewDirection()
             if (newDirection != direction) {
-                direction = newDirection
                 moveToGrid()
+                direction = newDirection
                 setSpeed()
             }
         }
@@ -45,7 +44,7 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         // Move according to speed
         x += xSpeed * deltaTime
         y += ySpeed * deltaTime
-        if (passed) {
+        if (passing) {
             gridLinePassed()
         }
     }
@@ -59,16 +58,16 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     }
 
     /** Moves x or y to the start of the grid line it is about to pass. */
-    private fun moveToGrid() {
+    open fun moveToGrid() {
         if (xSpeed > 0f && gridX < GRID_WIDTH - 1) x = gridX2x(gridX + 1)
         if (xSpeed < 0f) x = gridX2x(gridX)
         if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) y = gridY2y(gridY + 1)
         if (ySpeed < 0f) y = gridY2y(gridY)
     }
 
-    private fun aboutToPassGridLine(deltaTime: Float): Boolean =
+    private fun passingGridLine(deltaTime: Float): Boolean =
             when (direction) {
-                Direction.NONE -> true
+                Direction.NONE -> false
                 Direction.LEFT, Direction.RIGHT -> gridX != x2gridX(x + xSpeed * deltaTime)
                 Direction.UP  , Direction.DOWN  -> gridY != y2gridY(y + ySpeed * deltaTime)
             }
@@ -188,11 +187,24 @@ class Frank(level: Level, atlas: TextureAtlas)
 
     override fun gridLinePassed() {
         when (direction) {
-            Direction.LEFT -> level.dig(IntPoint(gridX+1, gridY), direction)
-            Direction.DOWN -> level.dig(IntPoint(gridX, gridY+1), direction)
-            else -> level.dig(IntPoint(gridX, gridY), direction)
+            Direction.LEFT -> level.dig(IntPoint(gridX + 1, gridY), direction)
+            Direction.DOWN -> level.dig(IntPoint(gridX, gridY + 1), direction)
+            else -> level.dig(pos, direction)
         }
+
     }
+
+    override fun moveToGrid() {
+        super.moveToGrid()
+        level.dig(pos, direction)
+    }
+//    override fun update(deltaTime: Float) {
+//        super.update(deltaTime)
+//        dig()
+//    }
+    private fun dig() {
+    }
+
 
     fun die() {
         println("DEAD")
@@ -207,6 +219,7 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
 
     override fun getNewDirection(): Direction {
         val onPath = level.getDirectionsOnPath(getNextGridPos())
+        if (onPath.isEmpty()) return direction
         val noReverse = onPath.filter { it != direction.reverse() }
         return if (noReverse.isEmpty()) onPath.first() else noReverse.shuffled()[0]
     }

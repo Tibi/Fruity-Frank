@@ -27,37 +27,43 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     val pos: IntPoint get() = IntPoint(gridX, gridY)
 
     open fun update(deltaTime: Float) {
-        val passing = passingGridLine(deltaTime)
-        // Changes direction if requested and if item about to pass a grid line
+        val passing = isPassingGridLine(deltaTime)
+        // Changes direction if requested and if item is about to pass a grid line.
         if (passing || direction == Direction.NONE) {
             val newDirection = getNewDirection()
             if (newDirection != direction) {
-                moveToGrid()
+                if (direction != Direction.NONE) {
+                    val oldPos = pos
+                    moveToGrid()
+                    gridLinePassed(oldPos)
+                }
                 direction = newDirection
                 setSpeed()
             }
+        }
+        if (direction == Direction.NONE) {
+            return
         }
         // Prevents running off grid
         if (aboutToHitWall(deltaTime)) {
             hitWall()
         }
+        val oldPos = pos
         // Move according to speed
         x += xSpeed * deltaTime
         y += ySpeed * deltaTime
-        if (passing) {
-            gridLinePassed()
+        if (oldPos != pos) {
+            gridLinePassed(oldPos)
         }
     }
 
-    open fun gridLinePassed() { }
+    /** True when a corner is about to cross a grid line. */
+    private fun isPassingGridLine(deltaTime: Float) =
+            gridX != x2gridX(x + xSpeed * deltaTime)
+         || gridY != y2gridY(y + ySpeed * deltaTime)
 
-    fun getNextGridPos(): IntPoint {
-        if (xSpeed > 0f && gridX < GRID_WIDTH - 1) return IntPoint(gridX + 1, gridY)
-        if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) return IntPoint(gridX, gridY + 1)
-        return IntPoint(gridX, gridY)
-    }
 
-    /** Moves x or y to the start of the grid line it is about to pass. */
+    /** Moves x or y to the grid line it is about to pass. */
     open fun moveToGrid() {
         if (xSpeed > 0f && gridX < GRID_WIDTH - 1) x = gridX2x(gridX + 1)
         if (xSpeed < 0f) x = gridX2x(gridX)
@@ -65,12 +71,13 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         if (ySpeed < 0f) y = gridY2y(gridY)
     }
 
-    private fun passingGridLine(deltaTime: Float): Boolean =
-            when (direction) {
-                Direction.NONE -> false
-                Direction.LEFT, Direction.RIGHT -> gridX != x2gridX(x + xSpeed * deltaTime)
-                Direction.UP  , Direction.DOWN  -> gridY != y2gridY(y + ySpeed * deltaTime)
-            }
+    open fun gridLinePassed(oldPos: IntPoint) { }
+
+    fun getNextGridPos(): IntPoint {
+        if (xSpeed > 0f && gridX < GRID_WIDTH - 1) return IntPoint(gridX + 1, gridY)
+        if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) return IntPoint(gridX, gridY + 1)
+        return IntPoint(gridX, gridY)
+    }
 
     private fun aboutToHitWall(deltaTime: Float): Boolean =
                    xSpeed > 0 && x + xSpeed * deltaTime > gridX2x(GRID_WIDTH - 1)
@@ -116,9 +123,11 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     }
 
     fun stop() {
+        val oldPos = pos
+        moveToGrid()
+        gridLinePassed(oldPos)
         direction = Direction.NONE
         nextDirection = Direction.NONE
-        moveToGrid()
         setSpeed()
     }
 }
@@ -185,26 +194,9 @@ class Frank(level: Level, atlas: TextureAtlas)
         stop()
     }
 
-    override fun gridLinePassed() {
-        when (direction) {
-            Direction.LEFT -> level.dig(IntPoint(gridX + 1, gridY), direction)
-            Direction.DOWN -> level.dig(IntPoint(gridX, gridY + 1), direction)
-            else -> level.dig(pos, direction)
-        }
-
+    override fun gridLinePassed(oldPos: IntPoint) {
+        level.dig(direction, oldPos, pos)
     }
-
-    override fun moveToGrid() {
-        super.moveToGrid()
-        level.dig(pos, direction)
-    }
-//    override fun update(deltaTime: Float) {
-//        super.update(deltaTime)
-//        dig()
-//    }
-    private fun dig() {
-    }
-
 
     fun die() {
         println("DEAD")

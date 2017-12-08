@@ -44,7 +44,7 @@ enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
 
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
-    data class IntPoint(val x: Int, val y: Int)
+    data class IntPoint(val x: Int, val y: Int) { override fun toString() = "$x, $y" }
 
     private val bg = game.atlas.findRegion("backgrounds/level1")
     private val header = game.atlas.findRegion("backgrounds/header")
@@ -232,13 +232,20 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun dig(pt: IntPoint, direction: Direction) {
-        if (direction == Direction.NONE) return
-        println("dig $pt")
-        blackBlocks.add(pt)
-        if (direction == Direction.DOWN && blackBlocks.any { it.x == pt.x && it.y == pt.y + 1 }
-                || direction == Direction.UP && pt.y < GRID_HEIGHT-1) {
-            highBlackBlocks.add(pt)
+    fun dig(dir: Direction, oldPos: IntPoint, newPos: IntPoint) {
+        println("digging: $oldPos -> $newPos")
+        if (dir == Direction.RIGHT || dir == Direction.UP) {
+            blackBlocks.add(newPos)
+        } else {
+            blackBlocks.add(oldPos)
+        }
+        if (dir == Direction.DOWN) {
+            highBlackBlocks.add(newPos)  // adds it in advance
+            println("high $newPos")
+        }
+        if (dir == Direction.UP) {
+            highBlackBlocks.add(oldPos)
+            println("high $oldPos")
         }
     }
 

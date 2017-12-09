@@ -41,12 +41,12 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
                 setSpeed()
             }
         }
-        if (direction == Direction.NONE) {
-            return
-        }
         // Prevents running off grid
         if (aboutToHitWall(deltaTime)) {
             hitWall()
+        }
+        if (direction == Direction.NONE) {
+            return
         }
         val oldPos = pos
         // Move according to speed
@@ -79,11 +79,11 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         return IntPoint(gridX, gridY)
     }
 
-    private fun aboutToHitWall(deltaTime: Float): Boolean =
+    private fun aboutToHitWall(deltaTime: Float): Boolean = direction != Direction.NONE && (
                    xSpeed > 0 && x + xSpeed * deltaTime > gridX2x(GRID_WIDTH - 1)
                 || xSpeed < 0 && x + xSpeed * deltaTime < GRID_START_X
                 || ySpeed > 0 && y + ySpeed * deltaTime > gridY2y(GRID_HEIGHT - 1)
-                || ySpeed < 0 && y + ySpeed * deltaTime < GRID_START_Y
+                || ySpeed < 0 && y + ySpeed * deltaTime < GRID_START_Y)
 
     open fun getNewDirection() = nextDirection
 
@@ -125,7 +125,9 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     fun stop() {
         val oldPos = pos
         moveToGrid()
-        gridLinePassed(oldPos)
+        if (oldPos != pos) {
+            gridLinePassed(oldPos)
+        }
         direction = Direction.NONE
         nextDirection = Direction.NONE
         setSpeed()

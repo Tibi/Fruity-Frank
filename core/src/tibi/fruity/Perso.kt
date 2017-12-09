@@ -130,6 +130,11 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         nextDirection = Direction.NONE
         setSpeed()
     }
+
+    fun putAt(point: IntPoint) {
+        x = gridX2x(point.x)
+        y = gridY2y(point.y)
+    }
 }
 
 
@@ -190,6 +195,7 @@ class Apple(level: Level, pos: IntPoint) : Fruit(level, level.appleTex, pos, 0) 
 
 class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
+
     override fun hitWall() {
         stop()
     }

@@ -76,6 +76,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         blackCross(gatePos)
+        player.putAt(gatePos.copy(y = 0))
 
         val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
             game.atlas.findRegion("fruits/" + it)

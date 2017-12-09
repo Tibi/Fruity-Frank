@@ -244,7 +244,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             highBlackBlocks.add(newPos)  // adds it in advance
             println("high $newPos")
         }
-        if (dir == Direction.UP) {
+        if (dir == Direction.UP && oldPos.y != GRID_HEIGHT - 1) {
             highBlackBlocks.add(oldPos)
             println("high $oldPos")
         }

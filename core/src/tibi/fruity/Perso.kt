@@ -217,6 +217,7 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
         val onPath = level.getDirectionsOnPath(getNextGridPos())
         if (onPath.isEmpty()) return direction
         val noReverse = onPath.filter { it != direction.reverse() }
+        println(onPath)
         return if (noReverse.isEmpty()) onPath.first() else noReverse.shuffled()[0]
     }
 }

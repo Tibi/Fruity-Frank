@@ -209,6 +209,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun spawnMonster() {
+        if (!monsters.isEmpty()) return
         if (monsters.size > 3 + levelNo) {
             return
         }
@@ -252,14 +253,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     fun getDirectionsOnPath(p: IntPoint) : Set<Direction> {
         val res = HashSet<Direction>(4)
-        highBlackBlocks.forEach { hBlock ->
-            if (hBlock == p) res.add(Direction.UP)
-            if (hBlock.y == p.y - 1 && hBlock.x == p.x) res.add(Direction.DOWN)
-        }
         blackBlocks.forEach {block ->
             if (block.y == p.y && block.x == p.x + 1) res.add(Direction.RIGHT)
             if (block.y == p.y && block.x == p.x - 1) res.add(Direction.LEFT)
-
+            if (block.x == p.x && block.y == p.y + 1 &&     p in highBlackBlocks) res.add(Direction.UP)
+            if (block.x == p.x && block.y == p.y - 1 && block in highBlackBlocks) res.add(Direction.DOWN)
         }
         return res
     }

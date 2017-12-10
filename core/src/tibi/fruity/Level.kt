@@ -1,9 +1,7 @@
 package tibi.fruity
 
-import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.*
 import com.badlogic.gdx.Input.Keys
-import com.badlogic.gdx.InputAdapter
-import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -12,9 +10,20 @@ import com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.MathUtils.*
+import com.badlogic.gdx.math.Vector3
+import com.badlogic.gdx.scenes.scene2d.Stage
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
+import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
+import com.badlogic.gdx.utils.viewport.ScreenViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
+import tibi.fruity.Direction.*
+import kotlin.math.abs
+import kotlin.math.max
 import com.badlogic.gdx.utils.Array as GdxArray
+
+
 
 const val SCREEN_WIDTH = 649F // was 646 in original game, 3 columns were only 40 px wide
 const val SCREEN_HEIGHT = 378F
@@ -67,8 +76,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     var speed = 100f
     private var score: Int = 0
 
-
-    val cam = OrthographicCamera()
+    private val touchpadStage = Stage(ScreenViewport())
+    val cam = touchpadStage.viewport.camera as OrthographicCamera
+    private val touchpadStyle = TouchpadStyle()
+    private val touchpad = Touchpad(10f, touchpadStyle)
 
     init {
         cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -87,7 +98,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         for (i in 0..20) {
             apples.add(Apple(this, randomPoint()))
         }
-        Gdx.input.inputProcessor = FruityInput(this)
+
+        touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))
+        touchpadStyle.knob = TextureRegionDrawable(game.atlas.findRegion("UI/touchKnob"))
+        touchpad.setBounds(15f, 15f, 100f, 100f)
+        touchpadStage.addActor(touchpad)
+        Gdx.input.inputProcessor = InputMultiplexer(touchpadStage, FruityInput(this))
     }
 
     private fun randomPoint() : IntPoint {
@@ -113,6 +129,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     override fun render(deltaTime: Float) {
+        touchpadStage.act(deltaTime)
         update(deltaTime)
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
@@ -135,19 +152,35 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
         fruits.forEach { it.render(game.batch) }
+
         game.batch.end()
-        
+
+        touchpadStage.draw()
+
         if (fruits.isEmpty()) {
             println("WINNER!!")
         }
     }
 
     fun processInput() {
+        val tx = touchpad.knobPercentX
+        val ty = touchpad.knobPercentY
+        if (abs(tx) + abs(ty) > .1) {
+            val teta = atan2(ty, tx) * radiansToDegrees
+            println(teta)
+            when (teta) {
+                in  -45..  45 -> { player.requestMove(RIGHT); return }
+                in   45.. 135 -> { player.requestMove(UP)   ; return }
+                in  135.. 180 -> { player.requestMove(LEFT) ; return }
+                in -180..-135 -> { player.requestMove(LEFT) ; return }
+                in -135..- 45 -> { player.requestMove(DOWN) ; return }
+            }
+        }
         when {
-            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT) -> player.requestMove(Direction.RIGHT)
-            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT) -> player.requestMove(Direction.LEFT)
-            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) -> player.requestMove(Direction.UP)
-            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN) -> player.requestMove(Direction.DOWN)
+            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)      ||  tx >  .1 -> player.requestMove(RIGHT)
+            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)       ||  tx < -.1 -> player.requestMove(LEFT)
+            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) ||  ty >  .1 -> player.requestMove(UP)
+            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)  ||  ty < -.1 -> player.requestMove(DOWN)
             else -> player.requestMove(Direction.NONE)
         }
     }
@@ -158,9 +191,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     override fun hide() {}
     override fun pause() {}
     override fun resume() {}
-    override fun dispose() {}
+    override fun dispose() {
+        touchpadStage.dispose()
+    }
     override fun resize(width: Int, height: Int) {
-        // TODO update viewport
+        touchpadStage.viewport.update(width, height, true)
     }
     
     private fun detectCollisions() {
@@ -226,6 +261,15 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
             return true
         }
+
+        override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+            if (button != Input.Buttons.LEFT || pointer > 0) return false
+            val vector3 = Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
+            level.cam.unproject(vector3)
+            level.touchpad.x = max(vector3.x - level.touchpad.width / 2, 0f)
+            level.touchpad.y = max(vector3.y - level.touchpad.height / 2, 0f)
+            return true
+        }
     }
 
     fun throwBall() {
@@ -239,7 +283,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         } else {
             blackBlocks.add(oldPos)
         }
-        if (dir == Direction.DOWN) {
+        if (dir == Direction.DOWN && oldPos.y != 0) {
             highBlackBlocks.add(newPos)  // adds it in advance
 //            println("high $newPos")
         }

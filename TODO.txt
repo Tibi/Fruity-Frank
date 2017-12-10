@@ -1,7 +1,13 @@
+ - fix screen size on android
  - monster collisions with monsters
  - touchpad on android   http://www.bigerstaff.com/libgdx-touchpad-example/
  - apples pushing, falling, crushing
+ - throw ball
  - bitmap font for score
+ - color rotation: tinted sprite for black path on win
  - bonus and fraise monsters
  - sound
  - music
+ - proguard?
+ - icon
+ - publish to Google Play?

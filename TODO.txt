@@ -1,6 +1,5 @@
- - fix digging
- - change Frank starting position?
  - monster collisions with monsters
+ - touchpad on android   http://www.bigerstaff.com/libgdx-touchpad-example/
  - apples pushing, falling, crushing
  - bitmap font for score
  - bonus and fraise monsters

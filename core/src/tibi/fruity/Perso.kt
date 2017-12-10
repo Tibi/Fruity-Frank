@@ -150,6 +150,15 @@ abstract class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speed
     }
 
     override fun render(batch: SpriteBatch) {
+        // when digging up, draw a black square below perso to clear the small ground piece left
+        if (direction == Direction.UP) {
+            val yUp = gridY2y(gridY) + CELL_HEIGHT - 5
+            if (y > yUp) batch.draw(level.blackTex, x, yUp)
+        }
+        else if (direction == Direction.DOWN) {
+            val yDown = gridY2y(gridY) + 5
+            if (y < yDown) batch.draw(level.blackTex, x, yDown)
+        }
         val anim = anims[direction]
         if (anim != null) {
             lastFrame = anim.getKeyFrame(stateTime)
@@ -217,7 +226,6 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
         val onPath = level.getDirectionsOnPath(getNextGridPos())
         if (onPath.isEmpty()) return direction
         val noReverse = onPath.filter { it != direction.reverse() }
-        println(onPath)
         return if (noReverse.isEmpty()) onPath.first() else noReverse.shuffled()[0]
     }
 }

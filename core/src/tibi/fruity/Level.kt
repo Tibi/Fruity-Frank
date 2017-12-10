@@ -31,13 +31,12 @@ const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
 
 enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
-
     fun reverse() = when(this) {
-        UP -> DOWN
-        DOWN -> UP
+        UP    -> DOWN
+        DOWN  -> UP
         RIGHT -> LEFT
-        LEFT -> RIGHT
-        NONE -> NONE
+        LEFT  -> RIGHT
+        NONE  -> NONE
     }
 }
 
@@ -54,7 +53,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val monsters = ArrayList<Perso>()
     private val blackBlocks = HashSet<IntPoint>()
     private val highBlackBlocks = HashSet<IntPoint>()
-    private val blackTex = game.atlas.findRegion("backgrounds/black")
+    val blackTex = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
     val appleTex = game.atlas.findRegion("fruits/apple")
     private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
@@ -209,7 +208,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun spawnMonster() {
-        if (!monsters.isEmpty()) return
         if (monsters.size > 3 + levelNo) {
             return
         }
@@ -235,7 +233,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun dig(dir: Direction, oldPos: IntPoint, newPos: IntPoint) {
-        println("digging: $oldPos -> $newPos")
+//        println("digging: $oldPos -> $newPos")
         if (dir == Direction.RIGHT || dir == Direction.UP) {
             blackBlocks.add(newPos)
         } else {
@@ -243,11 +241,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
         if (dir == Direction.DOWN) {
             highBlackBlocks.add(newPos)  // adds it in advance
-            println("high $newPos")
+//            println("high $newPos")
         }
         if (dir == Direction.UP && oldPos.y != GRID_HEIGHT - 1) {
             highBlackBlocks.add(oldPos)
-            println("high $oldPos")
+//            println("high $oldPos")
         }
     }
 

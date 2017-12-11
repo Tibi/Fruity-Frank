@@ -1,5 +1,5 @@
- - fix screen size on android
- - monster collisions with monsters
+ - fix screen size on android => can be tested
+ - monster collisions with monsters => in progress
  - touchpad on android   http://www.bigerstaff.com/libgdx-touchpad-example/
  - apples pushing, falling, crushing
  - throw ball

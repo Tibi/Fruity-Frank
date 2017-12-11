@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import tibi.fruity.Direction.*
 import tibi.fruity.Level.IntPoint
 
 abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float) {
@@ -13,8 +14,8 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     var xSpeed = 0f
     var ySpeed = 0f
 
-    var direction = Direction.NONE
-    var nextDirection = Direction.NONE
+    var direction = NONE
+    var nextDirection = NONE
 
     val gridX get() = x2gridX(x)
     val gridY get() = y2gridY(y)
@@ -29,10 +30,10 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     open fun update(deltaTime: Float) {
         val passing = isPassingGridLine(deltaTime)
         // Changes direction if requested and if item is about to pass a grid line.
-        if (passing || direction == Direction.NONE) {
+        if (passing || direction == NONE) {
             val newDirection = getNewDirection()
             if (newDirection != direction) {
-                if (direction != Direction.NONE) {
+                if (direction != NONE) {
                     moveToGrid()
                 }
                 direction = newDirection
@@ -43,7 +44,7 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         if (aboutToHitWall(deltaTime)) {
             hitWall()
         }
-        if (direction == Direction.NONE) {
+        if (direction == NONE) {
             return
         }
         val oldPos = pos
@@ -79,7 +80,7 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
         return IntPoint(gridX, gridY)
     }
 
-    private fun aboutToHitWall(deltaTime: Float): Boolean = direction != Direction.NONE && (
+    private fun aboutToHitWall(deltaTime: Float): Boolean = direction != NONE && (
                    xSpeed > 0 && x + xSpeed * deltaTime > gridX2x(GRID_WIDTH - 1)
                 || xSpeed < 0 && x + xSpeed * deltaTime < GRID_START_X
                 || ySpeed > 0 && y + ySpeed * deltaTime > gridY2y(GRID_HEIGHT - 1)
@@ -97,21 +98,26 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
             Direction.UP    -> ySpeed =  level.speed * speedFactor
             Direction.LEFT  -> xSpeed = -level.speed * speedFactor
             Direction.DOWN  -> ySpeed = -level.speed * speedFactor
-            Direction.NONE  -> {}
+            NONE  -> {}
         }
     }
 
     abstract fun render(batch: SpriteBatch)
 
-    fun collides(other: GridItem) = x in other.x-CELL_WIDTH+1 .. other.x+CELL_WIDTH-1
-                                 && y in other.y-CELL_HEIGHT  .. other.y+CELL_HEIGHT
+    fun collides(other: GridItem) = collides(other.x, other.y)
+    fun collides(ox: Float, oy: Float) = x in ox-CELL_WIDTH+1 .. ox+CELL_WIDTH-1
+                                      && y in oy-CELL_HEIGHT  .. oy+CELL_HEIGHT
 
-    companion object {
-        fun gridX2x(gridX: Int) = GRID_START_X + gridX * CELL_WIDTH
-        fun gridY2y(gridY: Int) = GRID_START_Y + gridY * (CELL_HEIGHT + GRID_MARGIN)
-        fun x2gridX(x: Float) = ((x - GRID_START_X) / CELL_WIDTH).toInt()
-        fun y2gridY(y: Float) = ((y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)).toInt()
+    fun avoid(other: GridItem) {
+        when (direction) {
+            RIGHT -> if (x < other.x) { x = other.x - GRID_WIDTH; move(LEFT) }
+            LEFT  -> if (other.x < x) { x = other.x + GRID_WIDTH; move(RIGHT) }
+            UP    -> if (y < other.y) { y = other.y - GRID_HEIGHT; move(DOWN) }
+            DOWN  -> if (other.y < y) { y = other.y + GRID_HEIGHT; move(UP) }
+            NONE  -> { }
+        }
     }
+
 
     fun requestMove(to: Direction) {
         nextDirection = to
@@ -124,8 +130,8 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
 
     fun stop() {
         moveToGrid()
-        direction = Direction.NONE
-        nextDirection = Direction.NONE
+        direction = NONE
+        nextDirection = NONE
         setSpeed()
     }
 

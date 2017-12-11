@@ -16,7 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
-import com.badlogic.gdx.utils.viewport.ScreenViewport
+import com.badlogic.gdx.utils.viewport.FitViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
 import kotlin.math.abs
@@ -39,6 +39,8 @@ const val GRID_MARGIN = 6F
 const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
 
+const val MONSTER_SPAWN_RATE = 2  // in seconds between monster spawn
+
 enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
     fun reverse() = when(this) {
         UP    -> DOWN
@@ -49,6 +51,10 @@ enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
     }
 }
 
+fun gridX2x(gridX: Int) = GRID_START_X + gridX * CELL_WIDTH
+fun gridY2y(gridY: Int) = GRID_START_Y + gridY * (CELL_HEIGHT + GRID_MARGIN)
+fun x2gridX(x: Float) = ((x - GRID_START_X) / CELL_WIDTH).toInt()
+fun y2gridY(y: Float) = ((y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)).toInt()
 
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
@@ -62,13 +68,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val monsters = ArrayList<Perso>()
     private val blackBlocks = HashSet<IntPoint>()
     private val highBlackBlocks = HashSet<IntPoint>()
-    val blackTex = game.atlas.findRegion("backgrounds/black")
+    val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
-    val appleTex = game.atlas.findRegion("fruits/apple")
+    val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
-    val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
-
-    val MONSTER_SPAWN_RATE = 2  // in seconds between monster spawn
+    private val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
 
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f
@@ -76,7 +80,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     var speed = 100f
     private var score: Int = 0
 
-    private val touchpadStage = Stage(ScreenViewport())
+    private val touchpadStage = Stage(FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT))
     val cam = touchpadStage.viewport.camera as OrthographicCamera
     private val touchpadStyle = TouchpadStyle()
     private val touchpad = Touchpad(10f, touchpadStyle)
@@ -114,14 +118,15 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         return pt
     }
 
-    fun update(deltaTime: Float) {
+    private fun update(deltaTime: Float) {
         processInput()
         detectCollisions()
         stateTime += deltaTime
         monsterSpawnStateTime += deltaTime
         if (monsterSpawnStateTime > MONSTER_SPAWN_RATE) {
-            spawnMonster()
-            monsterSpawnStateTime = 0f
+            if (spawnMonster()) {
+                monsterSpawnStateTime = 0f
+            }
         }
         player.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
@@ -144,10 +149,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
-            game.batch.draw(tex, GridItem.gridX2x(blackBlock.x), GridItem.gridY2y(blackBlock.y))
+            game.batch.draw(tex, gridX2x(blackBlock.x), gridY2y(blackBlock.y))
         }
         // Monster gate
-        game.batch.draw(gate.getKeyFrame(stateTime), GridItem.gridX2x(gatePos.x), GridItem.gridY2y(gatePos.y))
+        game.batch.draw(gate.getKeyFrame(stateTime), gridX2x(gatePos.x), gridY2y(gatePos.y))
 
         player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
@@ -162,7 +167,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    fun processInput() {
+    private fun processInput() {
         val tx = touchpad.knobPercentX
         val ty = touchpad.knobPercentY
         if (abs(tx) + abs(ty) > .1) {
@@ -203,9 +208,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             if (fruits.any { it.collides(monster) }) {
                 monster.move(monster.direction.reverse())
             }
-//            if (monsters.any { it.collides(monster) }) {
-//                monster.move(monster.direction.reverse())
-//            }
+//            monsters.find { it != monster && it.collides(monster) }?.avoid(monster)
+            if (monsters.any { it != monster && it.collides(monster) }) {
+                monster.move(monster.direction.reverse())
+            }
         }
         if (monsters.any { it.collides(player) }) {
             player.die()
@@ -242,9 +248,13 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    fun spawnMonster() {
+    /** Returns whether a monster could be spawned. */
+    private fun spawnMonster(): Boolean {
         if (monsters.size > 3 + levelNo) {
-            return
+            return false
+        }
+        if (monsters.any { it.collides(gridX2x(gatePos.x), gridY2y(gatePos.y)) }) {
+            return false
         }
         val monster = if (randomBoolean()) {
             Monster(this, createAnimations(game.atlas, "guy/"), gatePos, 0.7f)
@@ -253,9 +263,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
         monsters.add(monster)
         monster.move(Direction.values()[random(1, 4)])
+        return true
     }
 
-    class FruityInput(val level: Level) : InputAdapter() {
+    class FruityInput(private val level: Level) : InputAdapter() {
         override fun keyDown(keycode: Int): Boolean {
             if (keycode == Keys.RIGHT_BRACKET) level.throwBall()
             else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }

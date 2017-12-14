@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.MathUtils.*
+import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
@@ -19,10 +20,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
+import tibi.fruity.Level.IntPoint
+import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
 import com.badlogic.gdx.utils.Array as GdxArray
-
 
 
 const val SCREEN_WIDTH = 649F // was 646 in original game, 3 columns were only 40 px wide
@@ -51,10 +53,10 @@ enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
     }
 }
 
-fun gridX2x(gridX: Int) = GRID_START_X + gridX * CELL_WIDTH
-fun gridY2y(gridY: Int) = GRID_START_Y + gridY * (CELL_HEIGHT + GRID_MARGIN)
-fun x2gridX(x: Float) = ((x - GRID_START_X) / CELL_WIDTH).toInt()
-fun y2gridY(y: Float) = ((y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)).toInt()
+fun grid2Pos(gridPos: IntPoint) = Vector2(GRID_START_X + gridPos.x * CELL_WIDTH,
+                                          GRID_START_Y + gridPos.y * (CELL_HEIGHT + GRID_MARGIN))
+fun pos2Grid(pos: Vector2) = IntPoint(floor((pos.x - GRID_START_X) / CELL_WIDTH),
+                                      floor((pos.y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)))
 
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
@@ -114,7 +116,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         var pt: IntPoint
         do {
             pt = IntPoint(random(0, GRID_WIDTH - 1), random(0, GRID_HEIGHT - 1))
-        } while (pt in blackBlocks || pt in fruits.map { it.pos })
+        } while (pt in blackBlocks || pt in fruits.map { it.gridPos })
         return pt
     }
 
@@ -149,10 +151,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
-            game.batch.draw(tex, gridX2x(blackBlock.x), gridY2y(blackBlock.y))
+            val gridPos = grid2Pos(blackBlock)
+            game.batch.draw(tex, gridPos.x, gridPos.y)
         }
         // Monster gate
-        game.batch.draw(gate.getKeyFrame(stateTime), gridX2x(gatePos.x), gridY2y(gatePos.y))
+        val gridPos = grid2Pos(gatePos)
+        game.batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)
 
         player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
@@ -172,7 +176,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         val ty = touchpad.knobPercentY
         if (abs(tx) + abs(ty) > .1) {
             val teta = atan2(ty, tx) * radiansToDegrees
-            println(teta)
             when (teta) {
                 in  -45..  45 -> { player.requestMove(RIGHT); return }
                 in   45.. 135 -> { player.requestMove(UP)   ; return }
@@ -233,6 +236,21 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
+    fun isPositionFree(pos: Vector2, toExclude: GridItem): Boolean {
+        // outer wall
+//        if (pos.x > gridX2x(GRID_WIDTH - 1) || pos.x < GRID_START_X
+//                || pos.y > gridY2y(GRID_HEIGHT - 1) || pos.y < GRID_START_Y) {
+//            return false
+//        }
+        // collision with item
+        val items = HashSet<GridItem>()
+        items.addAll(monsters)
+        items.addAll(fruits)
+        items.add(player)
+        items.remove(toExclude)
+        return items.none { it.collides(pos) }
+    }
+
     private fun blackCross(pt: IntPoint) {
         for (x in 0 until GRID_WIDTH) {
             val block = IntPoint(x, pt.y)
@@ -250,10 +268,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     /** Returns whether a monster could be spawned. */
     private fun spawnMonster(): Boolean {
-        if (monsters.size > 3 + levelNo) {
+        if (monsters.size > -2 + levelNo) {
             return false
         }
-        if (monsters.any { it.collides(gridX2x(gatePos.x), gridY2y(gatePos.y)) }) {
+        if (monsters.any { it.collides(grid2Pos((gatePos))) }) {
             return false
         }
         val monster = if (randomBoolean()) {

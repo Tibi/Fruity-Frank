@@ -4,120 +4,81 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.*
 import tibi.fruity.Level.IntPoint
 
-abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float) {
+operator fun Vector2.times(factor: Float) = Vector2(x * factor, y * factor)
+operator fun Vector2.plus(other: Vector2) = Vector2(x + other.x, y + other.y)
 
-    var x = 0f
-    var y = 0f
-    var xSpeed = 0f
-    var ySpeed = 0f
+abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Float) {
+
+    var pos: Vector2
+    var speed = Vector2()
 
     var direction = NONE
     var nextDirection = NONE
 
-    val gridX get() = x2gridX(x)
-    val gridY get() = y2gridY(y)
-
     init {
-        x = gridX2x(pos.x)
-        y = gridY2y(pos.y)
+        pos = grid2Pos(gridPos)
     }
 
-    val pos: IntPoint get() = IntPoint(gridX, gridY)
+    val gridPos: IntPoint get() = pos2Grid(pos)
 
     open fun update(deltaTime: Float) {
-        val passing = isPassingGridLine(deltaTime)
+        setSpeed()
+        var newPos = pos + speed * deltaTime
+        val newGridPos = pos2Grid(newPos)
+        val closestGridPos = when (direction) {
+            RIGHT, UP -> newGridPos
+            LEFT, DOWN, NONE -> gridPos
+        }
         // Changes direction if requested and if item is about to pass a grid line.
-        if (passing || direction == NONE) {
-            val newDirection = getNewDirection()
+        if (gridPos != newGridPos || direction == NONE) {
+            dig(gridPos, newGridPos)
+            val newDirection = getNewDirection(closestGridPos)
             if (newDirection != direction) {
-                if (direction != NONE) {
-                    moveToGrid()
-                }
+                newPos = grid2Pos(closestGridPos) // TODO also move in the new direction
                 direction = newDirection
-                setSpeed()
             }
         }
-        // Prevents running off grid
-        if (aboutToHitWall(deltaTime)) {
-            hitWall()
-        }
-        if (direction == NONE) {
-            return
-        }
-        val oldPos = pos
-        // Move according to speed
-        x += xSpeed * deltaTime
-        y += ySpeed * deltaTime
-        if (oldPos != pos) {
-            gridLinePassed(oldPos)
+        if (level.isPositionFree(newPos, this)) {
+            pos = newPos
+        } else {
+            direction = direction.reverse()
         }
     }
 
-    /** True when a corner is about to cross a grid line. */
-    private fun isPassingGridLine(deltaTime: Float) =
-            gridX != x2gridX(x + xSpeed * deltaTime)
-         || gridY != y2gridY(y + ySpeed * deltaTime)
+    open fun dig(oldPos: IntPoint, newPos: IntPoint) { }
 
-
-    /** Moves x or y to the grid line it is about to pass. */
-    open fun moveToGrid() {
-        val oldPos = pos
-        if (xSpeed > 0f && gridX < GRID_WIDTH - 1) x = gridX2x(gridX + 1)
-        if (xSpeed < 0f) x = gridX2x(gridX)
-        if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) y = gridY2y(gridY + 1)
-        if (ySpeed < 0f) y = gridY2y(gridY)
-        gridLinePassed(oldPos)
+    open fun getNewDirection(closestGridPos: IntPoint): Direction {
+        if (nextDirection == LEFT  && closestGridPos.x == 0
+         || nextDirection == DOWN  && closestGridPos.y == 0
+         || nextDirection == RIGHT && closestGridPos.x == GRID_WIDTH - 1
+         || nextDirection == UP    && closestGridPos.y == GRID_HEIGHT - 1) {
+            return NONE
+        }
+        return nextDirection
     }
-
-    open fun gridLinePassed(oldPos: IntPoint) { }
-
-    fun getNextGridPos(): IntPoint {
-        if (xSpeed > 0f && gridX < GRID_WIDTH - 1) return IntPoint(gridX + 1, gridY)
-        if (ySpeed > 0f && gridY < GRID_HEIGHT - 1) return IntPoint(gridX, gridY + 1)
-        return IntPoint(gridX, gridY)
-    }
-
-    private fun aboutToHitWall(deltaTime: Float): Boolean = direction != NONE && (
-                   xSpeed > 0 && x + xSpeed * deltaTime > gridX2x(GRID_WIDTH - 1)
-                || xSpeed < 0 && x + xSpeed * deltaTime < GRID_START_X
-                || ySpeed > 0 && y + ySpeed * deltaTime > gridY2y(GRID_HEIGHT - 1)
-                || ySpeed < 0 && y + ySpeed * deltaTime < GRID_START_Y)
-
-    open fun getNewDirection() = nextDirection
 
     abstract fun hitWall()
 
     fun setSpeed() {
-        xSpeed = 0f
-        ySpeed = 0f
-        when (direction) {
-            Direction.RIGHT -> xSpeed =  level.speed * speedFactor
-            Direction.UP    -> ySpeed =  level.speed * speedFactor
-            Direction.LEFT  -> xSpeed = -level.speed * speedFactor
-            Direction.DOWN  -> ySpeed = -level.speed * speedFactor
-            NONE  -> {}
+        val newSpeed = level.speed * speedFactor
+        speed = when (direction) {
+            Direction.RIGHT -> Vector2(newSpeed, 0f)
+            Direction.UP    -> Vector2(0f, newSpeed)
+            Direction.LEFT  -> Vector2(- newSpeed, 0f)
+            Direction.DOWN  -> Vector2(0f, - newSpeed)
+            NONE  -> Vector2()
         }
     }
 
     abstract fun render(batch: SpriteBatch)
 
-    fun collides(other: GridItem) = collides(other.x, other.y)
-    fun collides(ox: Float, oy: Float) = x in ox-CELL_WIDTH+1 .. ox+CELL_WIDTH-1
-                                      && y in oy-CELL_HEIGHT  .. oy+CELL_HEIGHT
-
-    fun avoid(other: GridItem) {
-        when (direction) {
-            RIGHT -> if (x < other.x) { x = other.x - GRID_WIDTH; move(LEFT) }
-            LEFT  -> if (other.x < x) { x = other.x + GRID_WIDTH; move(RIGHT) }
-            UP    -> if (y < other.y) { y = other.y - GRID_HEIGHT; move(DOWN) }
-            DOWN  -> if (other.y < y) { y = other.y + GRID_HEIGHT; move(UP) }
-            NONE  -> { }
-        }
-    }
-
+    fun collides(other: GridItem) = collides(other.pos)
+    fun collides(bottomLeft: Vector2) = pos.x in bottomLeft.x-CELL_WIDTH+1 .. bottomLeft.x+CELL_WIDTH-1
+                                     && pos.y in bottomLeft.y-CELL_HEIGHT  .. bottomLeft.y+CELL_HEIGHT
 
     fun requestMove(to: Direction) {
         nextDirection = to
@@ -129,15 +90,14 @@ abstract class GridItem(val level: Level, pos: IntPoint, val speedFactor: Float)
     }
 
     fun stop() {
-        moveToGrid()
+        pos = grid2Pos(gridPos)
         direction = NONE
         nextDirection = NONE
-        setSpeed()
+        speed = Vector2()
     }
 
     fun putAt(point: IntPoint) {
-        x = gridX2x(point.x)
-        y = gridY2y(point.y)
+        pos = grid2Pos(point)
     }
 }
 
@@ -158,24 +118,24 @@ abstract class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speed
     override fun render(batch: SpriteBatch) {
         // when digging up, draw a black square below perso to clear the small ground piece left
         if (direction == Direction.UP) {
-            val yUp = gridY2y(gridY) + CELL_HEIGHT - 5
-            if (y > yUp) batch.draw(level.blackTex, x, yUp)
+            val yUp = grid2Pos(gridPos).y + CELL_HEIGHT - 5
+            if (pos.y > yUp) batch.draw(level.blackTex, pos.x, yUp)
         }
         else if (direction == Direction.DOWN) {
-            val yDown = gridY2y(gridY) + 5
-            if (y < yDown) batch.draw(level.blackTex, x, yDown)
+            val yDown = grid2Pos(gridPos).y + 5
+            if (pos.y < yDown) batch.draw(level.blackTex, pos.x, yDown)
         }
         val anim = anims[direction]
         if (anim != null) {
             lastFrame = anim.getKeyFrame(stateTime)
         }
-        batch.draw(lastFrame, x, y)
+        batch.draw(lastFrame, pos.x, pos.y)
     }
 }
 
 open class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val score: Int) : GridItem(level, pos, 0f) {
     override fun render(batch: SpriteBatch) {
-        batch.draw(textureRegion, x, y)
+        batch.draw(textureRegion, pos.x, pos.y)
     }
 
     override fun update(deltaTime: Float) {
@@ -213,8 +173,8 @@ class Frank(level: Level, atlas: TextureAtlas)
         stop()
     }
 
-    override fun gridLinePassed(oldPos: IntPoint) {
-        level.dig(direction, oldPos, pos)
+    override fun dig(oldPos: IntPoint, newPos: IntPoint) {
+        level.dig(direction, oldPos, newPos)
     }
 
     fun die() {
@@ -228,10 +188,11 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
         move(direction.reverse())
     }
 
-    override fun getNewDirection(): Direction {
-        val onPath = level.getDirectionsOnPath(getNextGridPos())
+    override fun getNewDirection(closestGridPos: IntPoint): Direction {
+        println("new dir for $closestGridPos")
+        val onPath = level.getDirectionsOnPath(closestGridPos)
         if (onPath.isEmpty()) return direction
-        val noReverse = onPath.filter { it != direction.reverse() }
-        return if (noReverse.isEmpty()) onPath.first() else noReverse.shuffled()[0]
+        if (onPath.size == 1) return onPath.first()
+        return onPath.filter { it != direction.reverse() }.shuffled()[0]
     }
 }

@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.*
-import tibi.fruity.Level.IntPoint
 
 operator fun Vector2.times(factor: Float) = Vector2(x * factor, y * factor)
 operator fun Vector2.plus(other: Vector2) = Vector2(x + other.x, y + other.y)
@@ -156,6 +155,25 @@ class Apple(level: Level, pos: IntPoint) : Fruit(level, level.appleTex, pos, 0) 
 
 }
 
+open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
+
+    override fun getNewDirection(closestGridPos: IntPoint): Direction {
+        val onPath = level.getDirectionsOnPath(closestGridPos)
+        if (onPath.isEmpty()) return direction
+        if (onPath.size == 1) return onPath.first()
+        return onPath.filter { it != direction.reverse() }.shuffled()[0]
+    }
+    override fun detectCollision(newPos: Vector2): Boolean {
+        val col = super.detectCollision(newPos)
+        if (col) {
+            direction = direction.reverse()
+        }
+        //TODO kill player
+        return col
+    }
+
+}
+
 class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
 
@@ -164,33 +182,16 @@ class Frank(level: Level, atlas: TextureAtlas)
     }
 
     override fun detectCollision(newPos: Vector2): Boolean {
-        if (!level.isPositionFree(newPos, this)) {
-            direction = NONE
-            return true
+        val newGridPos = when (direction) {
+            RIGHT -> pos2Grid(newPos) + IntPoint(1, 0)
+            UP    -> pos2Grid(newPos) + IntPoint(0, 1)
+            else  -> pos2Grid(newPos)
         }
+        level.fruits.find { it.gridPos == newGridPos }?.let { level.eat(it) }
         return false
     }
 
     fun die() {
         println("DEAD")
-    }
-}
-
-
-open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
-    override fun getNewDirection(closestGridPos: IntPoint): Direction {
-        println("new dir for $closestGridPos")
-        val onPath = level.getDirectionsOnPath(closestGridPos)
-        if (onPath.isEmpty()) return direction
-        if (onPath.size == 1) return onPath.first()
-        return onPath.filter { it != direction.reverse() }.shuffled()[0]
-    }
-
-    override fun detectCollision(newPos: Vector2): Boolean {
-        val col = super.detectCollision(newPos)
-        if (col) {
-            direction = direction.reverse()
-        }
-        return col
     }
 }

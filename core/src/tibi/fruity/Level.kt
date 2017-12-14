@@ -20,7 +20,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
-import tibi.fruity.Level.IntPoint
 import java.util.*
 import kotlin.math.abs
 import kotlin.math.max
@@ -58,15 +57,19 @@ fun grid2Pos(gridPos: IntPoint) = Vector2(GRID_START_X + gridPos.x * CELL_WIDTH,
 fun pos2Grid(pos: Vector2) = IntPoint(floor((pos.x - GRID_START_X) / CELL_WIDTH),
                                       floor((pos.y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)))
 
+data class IntPoint(val x: Int, val y: Int) {
+    override fun toString() = "$x, $y"
+    operator fun plus(o: IntPoint) = IntPoint(x + o.x, y + o.y)
+}
+
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
-    data class IntPoint(val x: Int, val y: Int) { override fun toString() = "$x, $y" }
 
     private val bg = game.atlas.findRegion("backgrounds/level1")
     private val header = game.atlas.findRegion("backgrounds/header")
     private val player = Frank(this, game.atlas)
-    private val fruits = ArrayList<Fruit>()
-    private val apples = ArrayList<Apple>()
+    val fruits = ArrayList<Fruit>()
+    val apples = ArrayList<Apple>()
     private val monsters = ArrayList<Perso>()
     private val blackBlocks = HashSet<IntPoint>()
     private val highBlackBlocks = HashSet<IntPoint>()
@@ -293,6 +296,9 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
+    fun dig(pos: IntPoint) {
+        blackBlocks.add(pos)
+    }
     fun dig(dir: Direction, oldPos: IntPoint, newPos: IntPoint) {
 //        println("digging: $oldPos -> $newPos")
         if (dir == Direction.RIGHT || dir == Direction.UP) {
@@ -319,6 +325,14 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             if (block.x == p.x && block.y == p.y - 1 && block in highBlackBlocks) res.add(Direction.DOWN)
         }
         return res
+    }
+
+    fun eat(fruit: Fruit) {
+        score += score
+        println("MIAM niam + $score")
+        fruits.remove(fruit)
+        dig(fruit.gridPos)
+        speed += 10
     }
 
 }

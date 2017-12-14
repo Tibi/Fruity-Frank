@@ -91,7 +91,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
-        blackCross(gatePos)
+        drawBlackCross(gatePos)
         player.putAt(gatePos.copy(y = 0))
 
         val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
@@ -109,7 +109,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         touchpadStyle.knob = TextureRegionDrawable(game.atlas.findRegion("UI/touchKnob"))
         touchpad.setBounds(15f, 15f, 100f, 100f)
         touchpadStage.addActor(touchpad)
-        Gdx.input.inputProcessor = InputMultiplexer(touchpadStage, FruityInput(this))
+        Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), touchpadStage)
     }
 
     private fun randomPoint() : IntPoint {
@@ -122,7 +122,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     private fun update(deltaTime: Float) {
         processInput()
-        detectCollisions()
         stateTime += deltaTime
         monsterSpawnStateTime += deltaTime
         if (monsterSpawnStateTime > MONSTER_SPAWN_RATE) {
@@ -237,21 +236,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun isPositionFree(pos: Vector2, toExclude: GridItem): Boolean {
-        // outer wall
-//        if (pos.x > gridX2x(GRID_WIDTH - 1) || pos.x < GRID_START_X
-//                || pos.y > gridY2y(GRID_HEIGHT - 1) || pos.y < GRID_START_Y) {
-//            return false
-//        }
-        // collision with item
-        val items = HashSet<GridItem>()
-        items.addAll(monsters)
-        items.addAll(fruits)
-        items.add(player)
-        items.remove(toExclude)
-        return items.none { it.collides(pos) }
+        return monsters.filter { it != toExclude }.none { it.collides(pos) }
     }
 
-    private fun blackCross(pt: IntPoint) {
+    private fun drawBlackCross(pt: IntPoint) {
         for (x in 0 until GRID_WIDTH) {
             val block = IntPoint(x, pt.y)
             blackBlocks.add(block)
@@ -268,7 +256,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     /** Returns whether a monster could be spawned. */
     private fun spawnMonster(): Boolean {
-        if (monsters.size > -2 + levelNo) {
+        if (monsters.size > 3 + levelNo) {
             return false
         }
         if (monsters.any { it.collides(grid2Pos((gatePos))) }) {
@@ -297,7 +285,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             level.cam.unproject(vector3)
             level.touchpad.x = max(vector3.x - level.touchpad.width / 2, 0f)
             level.touchpad.y = max(vector3.y - level.touchpad.height / 2, 0f)
-            return true
+            return false // to let the touchpad process the touch
         }
     }
 

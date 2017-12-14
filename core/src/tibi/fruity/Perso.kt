@@ -42,10 +42,19 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Fl
                 direction = newDirection
             }
         }
-        if (level.isPositionFree(newPos, this)) {
+        if (!detectCollision(newPos)) {
             pos = newPos
-        } else {
-            direction = direction.reverse()
+        }
+    }
+
+    fun setSpeed() {
+        val newSpeed = level.speed * speedFactor
+        speed = when (direction) {
+            Direction.RIGHT -> Vector2(newSpeed, 0f)
+            Direction.UP    -> Vector2(0f, newSpeed)
+            Direction.LEFT  -> Vector2(- newSpeed, 0f)
+            Direction.DOWN  -> Vector2(0f, - newSpeed)
+            NONE  -> Vector2()
         }
     }
 
@@ -61,17 +70,9 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Fl
         return nextDirection
     }
 
-    abstract fun hitWall()
-
-    fun setSpeed() {
-        val newSpeed = level.speed * speedFactor
-        speed = when (direction) {
-            Direction.RIGHT -> Vector2(newSpeed, 0f)
-            Direction.UP    -> Vector2(0f, newSpeed)
-            Direction.LEFT  -> Vector2(- newSpeed, 0f)
-            Direction.DOWN  -> Vector2(0f, - newSpeed)
-            NONE  -> Vector2()
-        }
+    /** Returns true when a collision is found at the new position. */
+    open fun detectCollision(newPos: Vector2): Boolean {
+        return !level.isPositionFree(newPos, this)
     }
 
     abstract fun render(batch: SpriteBatch)
@@ -104,9 +105,6 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Fl
 
 abstract class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speedFactor: Float) : GridItem(level, pos, speedFactor) {
 
-    enum class State { IDLE, MOVING, FALLING, STOPPING }
-
-    var state = State.IDLE
     var lastFrame: AtlasRegion? = anims[Direction.RIGHT]?.getKeyFrame(0f)
     var stateTime: Float = 0f
 
@@ -137,14 +135,6 @@ open class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, 
     override fun render(batch: SpriteBatch) {
         batch.draw(textureRegion, pos.x, pos.y)
     }
-
-    override fun update(deltaTime: Float) {
-        // Not moving or animating
-    }
-
-    override fun hitWall() {
-
-    }
 }
 
 class Apple(level: Level, pos: IntPoint) : Fruit(level, level.appleTex, pos, 0) {
@@ -169,12 +159,16 @@ class Apple(level: Level, pos: IntPoint) : Fruit(level, level.appleTex, pos, 0) 
 class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
 
-    override fun hitWall() {
-        stop()
-    }
-
     override fun dig(oldPos: IntPoint, newPos: IntPoint) {
         level.dig(direction, oldPos, newPos)
+    }
+
+    override fun detectCollision(newPos: Vector2): Boolean {
+        if (!level.isPositionFree(newPos, this)) {
+            direction = NONE
+            return true
+        }
+        return false
     }
 
     fun die() {
@@ -184,15 +178,19 @@ class Frank(level: Level, atlas: TextureAtlas)
 
 
 open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float) : Perso(level, anims, pos, speedFactor) {
-    override fun hitWall() {
-        move(direction.reverse())
-    }
-
     override fun getNewDirection(closestGridPos: IntPoint): Direction {
         println("new dir for $closestGridPos")
         val onPath = level.getDirectionsOnPath(closestGridPos)
         if (onPath.isEmpty()) return direction
         if (onPath.size == 1) return onPath.first()
         return onPath.filter { it != direction.reverse() }.shuffled()[0]
+    }
+
+    override fun detectCollision(newPos: Vector2): Boolean {
+        val col = super.detectCollision(newPos)
+        if (col) {
+            direction = direction.reverse()
+        }
+        return col
     }
 }

@@ -1,8 +1,9 @@
- - fix screen size on android => can be tested
- - monster collisions with monsters => in progress
- - touchpad on android   http://www.bigerstaff.com/libgdx-touchpad-example/
+ - show touchpad only on android
+ - make touchpad usable and pretty
  - apples pushing, falling, crushing
  - throw ball
+ - let monsters dig
+ - falling prune
  - bitmap font for score
  - color rotation: tinted sprite for black path on win
  - bonus and fraise monsters

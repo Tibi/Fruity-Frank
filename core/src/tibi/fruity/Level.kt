@@ -70,7 +70,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val apples = ArrayList<Apple>()
-    private val monsters = ArrayList<Perso>()
+    val monsters = ArrayList<Perso>()
     private val blackBlocks = HashSet<IntPoint>()
     private val highBlackBlocks = HashSet<IntPoint>()
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
@@ -90,6 +90,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val touchpadStyle = TouchpadStyle()
     private val touchpad = Touchpad(10f, touchpadStyle)
 
+    private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
+
     init {
         cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
@@ -107,11 +109,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         for (i in 0..20) {
             apples.add(Apple(this, randomPoint()))
         }
-
-        touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))
-        touchpadStyle.knob = TextureRegionDrawable(game.atlas.findRegion("UI/touchKnob"))
-        touchpad.setBounds(15f, 15f, 100f, 100f)
-        touchpadStage.addActor(touchpad)
+        if (isAndroid) {
+            touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))
+            touchpadStyle.knob = TextureRegionDrawable(game.atlas.findRegion("UI/touchKnob"))
+            touchpad.setBounds(15f, 15f, 100f, 100f)
+            touchpadStage.addActor(touchpad)
+        }
         Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), touchpadStage)
     }
 
@@ -138,7 +141,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     override fun render(deltaTime: Float) {
-        touchpadStage.act(deltaTime)
+        if (isAndroid) touchpadStage.act(deltaTime)
         update(deltaTime)
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
@@ -166,7 +169,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
         game.batch.end()
 
-        touchpadStage.draw()
+        if (isAndroid) touchpadStage.draw()
 
         if (fruits.isEmpty()) {
             println("WINNER!!")
@@ -206,36 +209,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
     override fun resize(width: Int, height: Int) {
         touchpadStage.viewport.update(width, height, true)
-    }
-    
-    private fun detectCollisions() {
-        for (monster in monsters) {
-            if (fruits.any { it.collides(monster) }) {
-                monster.move(monster.direction.reverse())
-            }
-//            monsters.find { it != monster && it.collides(monster) }?.avoid(monster)
-            if (monsters.any { it != monster && it.collides(monster) }) {
-                monster.move(monster.direction.reverse())
-            }
-        }
-        if (monsters.any { it.collides(player) }) {
-            player.die()
-        }
-        val fruitsCol = fruits.filter { it.collides(player) }
-        if (fruitsCol.isNotEmpty()) {
-            score += fruitsCol.map { it.score }.sum()
-            println("MIAM niam + $score")
-            fruits.removeAll(fruitsCol)
-            speed += 10
-        }
-        apples.filter { it.collides(player) }.forEach { apple ->
-            if (apple.isFalling()) {
-                player.die()
-            } else {
-                apple.state = Apple.AppleState.PUSHED
-                // TODO move it here?
-            }
-        }
     }
 
     fun isPositionFree(pos: Vector2, toExclude: GridItem): Boolean {
@@ -328,11 +301,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun eat(fruit: Fruit) {
-        score += score
+        score += fruit.score
         println("MIAM niam + $score")
         fruits.remove(fruit)
         dig(fruit.gridPos)
-        speed += 10
     }
 
 }

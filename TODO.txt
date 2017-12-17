@@ -1,7 +1,7 @@
- - show touchpad only on android
  - make touchpad usable and pretty
  - apples pushing, falling, crushing
  - throw ball
+ - halve all images, scaling will restore pixelisation
  - let monsters dig
  - falling prune
  - bitmap font for score

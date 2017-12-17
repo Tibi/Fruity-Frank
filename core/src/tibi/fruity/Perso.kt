@@ -188,6 +188,9 @@ class Frank(level: Level, atlas: TextureAtlas)
             else  -> pos2Grid(newPos)
         }
         level.fruits.find { it.gridPos == newGridPos }?.let { level.eat(it) }
+        if (level.monsters.any { it.collides(this) }) {
+            die()
+        }
         return false
     }
 

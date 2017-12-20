@@ -5,9 +5,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 
 
-operator fun Vector2.times(factor: Float) = Vector2(x * factor, y * factor)
-operator fun Vector2.plus(other: Vector2) = Vector2(x + other.x, y + other.y)
-
 /** A game object that can move along the grid. */
 abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Float) {
 

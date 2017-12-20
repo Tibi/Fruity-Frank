@@ -37,7 +37,7 @@ fun pos2Grid(pos: Vector2) = IntPoint(MathUtils.floor((pos.x - GRID_START_X) / C
 
 data class IntPoint(val x: Int, val y: Int) {
     override fun toString() = "$x, $y"
-    operator fun plus(o: IntPoint) = IntPoint(x + o.x, y + o.y)
+    fun plus(ox: Int, oy: Int) = IntPoint(x + ox, y + oy)
 }
 
 

@@ -68,8 +68,8 @@ class Frank(level: Level, atlas: TextureAtlas)
 
     override fun detectCollision(newPos: Vector2): Boolean {
         val newGridPos = when (direction) {
-            RIGHT -> pos2Grid(newPos) + IntPoint(1, 0)
-            UP    -> pos2Grid(newPos) + IntPoint(0, 1)
+            RIGHT -> pos2Grid(newPos).plus(1, 0)
+            UP    -> pos2Grid(newPos).plus(0, 1)
             else  -> pos2Grid(newPos)
         }
         level.fruits.find { it.gridPos == newGridPos }?.let { level.eat(it) }

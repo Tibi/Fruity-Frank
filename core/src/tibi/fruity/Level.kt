@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.abs
 import kotlin.math.max
 import com.badlogic.gdx.utils.Array as GdxArray
@@ -29,14 +30,15 @@ import com.badlogic.gdx.utils.Array as GdxArray
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
 
-    private val bg = game.atlas.findRegion("backgrounds/level1")
-    private val header = game.atlas.findRegion("backgrounds/header")
-    private val player = Frank(this, game.atlas)
+    val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val apples = ArrayList<Apple>()
     val monsters = ArrayList<Perso>()
-    private val blackBlocks = HashSet<IntPoint>()
-    private val highBlackBlocks = HashSet<IntPoint>()
+    val blackBlocks = HashSet<IntPoint>()
+    val highBlackBlocks = HashSet<IntPoint>()
+
+    private val bg = game.atlas.findRegion("backgrounds/level1")
+    private val header = game.atlas.findRegion("backgrounds/header")
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
@@ -66,12 +68,13 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
             game.atlas.findRegion("fruits/" + it)
         }
+        val randPoints = getRandomFreePoints()
         for (i in 0..20) {
             val textureIndex = randomTriangular(0f, levelNo + 1f, 0f).toInt()
-            fruits.add(Fruit(this, fruitTextures[textureIndex], randomPoint(), 10))
+            fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints.pop(), 10))
         }
-        for (i in 0..20) {
-            apples.add(Apple(this, randomPoint()))
+        for (i in 0..10) {
+            apples.add(Apple(this, randPoints.pop()))
         }
         if (isAndroid) {
             touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))
@@ -82,13 +85,14 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), touchpadStage)
     }
 
-    private fun randomPoint() : IntPoint {
-        var pt: IntPoint
-        do {
-            pt = IntPoint(random(0, GRID_WIDTH - 1), random(0, GRID_HEIGHT - 1))
-        } while (pt in blackBlocks || pt in fruits.map { it.gridPos })
-        return pt
+    private fun getRandomFreePoints(): ArrayDeque<IntPoint> {
+        val allPoints = ArrayList<IntPoint>()
+        (0 until GRID_WIDTH).forEach { x -> (0 until GRID_HEIGHT).forEach { y -> allPoints.add(IntPoint(x, y)) } }
+        allPoints.removeAll(blackBlocks)
+        allPoints.shuffle()
+        return ArrayDeque(allPoints)
     }
+
 
     private fun update(deltaTime: Float) {
         processInput()
@@ -102,6 +106,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         player.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
+        apples.forEach { it.update(deltaTime) }
     }
 
     override fun render(deltaTime: Float) {
@@ -130,6 +135,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
         fruits.forEach { it.render(game.batch) }
+        apples.forEach { it.render(game.batch) }
 
         game.batch.end()
 

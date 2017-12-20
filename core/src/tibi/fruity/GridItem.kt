@@ -3,10 +3,11 @@ package tibi.fruity
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
+import tibi.fruity.Apple.AppleState.*
 
 
 /** A game object that can move along the grid. */
-abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Float) {
+abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Float) {
 
     var pos: Vector2
     var speed = Vector2()
@@ -82,7 +83,6 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, val speedFactor: Fl
 
     fun move(to: Direction) {
         direction = to
-        setSpeed()
     }
 
     fun stop() {
@@ -110,12 +110,24 @@ open class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, 
 class Apple(level: Level, pos: IntPoint)
     : Fruit(level, level.appleTex, pos, 0) {
 
-    enum class AppleState { IDLE, PUSHED, FALLING, CRASHING }
-    var state = AppleState.IDLE
+    enum class AppleState { IDLE, PUSHED, FALLING_SLOW, FALLING_FAST, CRASHING }
+    var state = IDLE
+        set(value) = changeState(value)
 
-    fun isFalling() = state == AppleState.FALLING
+    private fun changeState(newState: AppleState) {
+        when (newState) {
+            FALLING_SLOW -> { speedFactor = 0.1f; requestMove(Direction.DOWN) }
+            FALLING_FAST -> { speedFactor =   1f; requestMove(Direction.DOWN) }
+        }
+    }
 
     override fun update(deltaTime: Float) {
+        val pos = gridPos.plus(0, -1)
+        state = when {
+            level.highBlackBlocks.contains(pos) -> FALLING_FAST
+            level.blackBlocks.contains(pos) -> FALLING_SLOW
+            else -> IDLE
+        }
         // IDLE
         // above black => fall slowly
         // above high black => fall

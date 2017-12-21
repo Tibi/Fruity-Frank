@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Apple.AppleState.*
+import tibi.fruity.Direction.DOWN
+import tibi.fruity.Direction.NONE
 
 
 /** A game object that can move along the grid. */
@@ -12,8 +14,8 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
     var pos: Vector2
     var speed = Vector2()
 
-    var direction = Direction.NONE
-    var nextDirection = Direction.NONE
+    var direction = NONE
+    var nextDirection = NONE
 
     init {
         pos = grid2Pos(gridPos)
@@ -27,10 +29,10 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
         val newGridPos = pos2Grid(newPos)
         val closestGridPos = when (direction) {
             Direction.RIGHT, Direction.UP -> newGridPos
-            Direction.LEFT, Direction.DOWN, Direction.NONE -> gridPos
+            Direction.LEFT, DOWN, NONE -> gridPos
         }
         // Changes direction if requested and if item is about to pass a grid line.
-        if (gridPos != newGridPos || direction == Direction.NONE) {
+        if (gridPos != newGridPos || direction == NONE) {
             dig(gridPos, newGridPos)
             val newDirection = getNewDirection(closestGridPos)
             if (newDirection != direction) {
@@ -49,8 +51,8 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
             Direction.RIGHT -> Vector2(newSpeed, 0f)
             Direction.UP    -> Vector2(0f, newSpeed)
             Direction.LEFT  -> Vector2(- newSpeed, 0f)
-            Direction.DOWN  -> Vector2(0f, - newSpeed)
-            Direction.NONE -> Vector2()
+            DOWN  -> Vector2(0f, - newSpeed)
+            NONE -> Vector2()
         }
     }
 
@@ -58,10 +60,10 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
 
     open fun getNewDirection(closestGridPos: IntPoint): Direction {
         if (nextDirection == Direction.LEFT && closestGridPos.x == 0
-         || nextDirection == Direction.DOWN && closestGridPos.y == 0
+         || nextDirection == DOWN && closestGridPos.y == 0
          || nextDirection == Direction.RIGHT && closestGridPos.x == GRID_WIDTH - 1
          || nextDirection == Direction.UP && closestGridPos.y == GRID_HEIGHT - 1) {
-            return Direction.NONE
+            return NONE
         }
         return nextDirection
     }
@@ -87,8 +89,8 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
 
     fun stop() {
         pos = grid2Pos(gridPos)
-        direction = Direction.NONE
-        nextDirection = Direction.NONE
+        direction = NONE
+        nextDirection = NONE
         speed = Vector2()
     }
 
@@ -111,30 +113,34 @@ class Apple(level: Level, pos: IntPoint)
     : Fruit(level, level.appleTex, pos, 0) {
 
     enum class AppleState { IDLE, PUSHED, FALLING_SLOW, FALLING_FAST, CRASHING }
-    var state = IDLE
-        set(value) = changeState(value)
 
-    private fun changeState(newState: AppleState) {
-        when (newState) {
-            FALLING_SLOW -> { speedFactor = 0.1f; requestMove(Direction.DOWN) }
-            FALLING_FAST -> { speedFactor =   1f; requestMove(Direction.DOWN) }
+    var state = IDLE
+        set(value) {
+            speedFactor = when (value) {
+                FALLING_SLOW -> 0.1f
+                else -> 1.0f
+            }
+            field = value
         }
-    }
 
     override fun update(deltaTime: Float) {
+        if (state == FALLING_SLOW && pos != grid2Pos(gridPos) && pos.y < grid2Pos(gridPos).y + CELL_HEIGHT - 5) {
+            state = FALLING_FAST
+        }
+        super.update(deltaTime)
+    }
+
+    override fun getNewDirection(closestGridPos: IntPoint): Direction {
         val pos = gridPos.plus(0, -1)
         state = when {
             level.highBlackBlocks.contains(pos) -> FALLING_FAST
             level.blackBlocks.contains(pos) -> FALLING_SLOW
             else -> IDLE
         }
-        // IDLE
-        // above black => fall slowly
-        // above high black => fall
-
-        // FALLING
-        //
-        super.update(deltaTime)
+        return when (state) {
+            FALLING_FAST, FALLING_SLOW -> DOWN
+            else -> NONE
+        }
     }
 
 }

@@ -94,7 +94,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
 
-    private fun update(deltaTime: Float) {
+    private fun update(dt: Float) {
+        val deltaTime = if (dt > 0.3f) 0.3f else dt
         processInput()
         stateTime += deltaTime
         monsterSpawnStateTime += deltaTime
@@ -202,6 +203,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     /** Returns whether a monster could be spawned. */
     private fun spawnMonster(): Boolean {
+        return false
         if (monsters.size > 3 + levelNo) {
             return false
         }

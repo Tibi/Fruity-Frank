@@ -4,8 +4,8 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.Vector2
-import tibi.fruity.Direction.RIGHT
-import tibi.fruity.Direction.UP
+import tibi.fruity.Apple.AppleState.IDLE
+import kotlin.math.sign
 
 
 /** An animated GridItem. */
@@ -67,16 +67,28 @@ class Frank(level: Level, atlas: TextureAtlas)
     }
 
     override fun detectCollision(newPos: Vector2): Boolean {
-        val newGridPos = when (direction) {
-            RIGHT -> pos2Grid(newPos).plus(1, 0)
-            UP    -> pos2Grid(newPos).plus(0, 1)
-            else  -> pos2Grid(newPos)
-        }
-        level.fruits.find { it.gridPos == newGridPos }?.let { level.eat(it) }
         if (level.monsters.any { it.collides(this) }) {
             die()
         }
-        return false
+        level.fruits.find { it.collides(this) }?.let { level.eat(it) }
+        return level.apples.find { it.collides(this) }?.let { pushApple(it, newPos) } ?: false
+    }
+
+    /** Returns whether the apple could be pushed or if Frank should stop. */
+    private fun pushApple(apple: Apple, newPos: Vector2): Boolean {
+        // Can't push up or down
+        if (pos.y != newPos.y || apple.state != IDLE) return false
+        // Can't push 2 apples at a time
+        val directionSign = sign(newPos.x - pos.x)
+//        val otherApplePos = apple.gridPos.plus(directionSign, 0)
+//        if (otherApplePos.x < 0 || otherApplePos.x >= GRID_WIDTH
+// || level.apples.any { it.gridPos == otherApplePos }) {
+// || level.fruits.any { it.gridPos == otherApplePos }) {
+        // push apple against monster => ?
+//            return false
+//        }
+        apple.pos.x = newPos.x + directionSign * CELL_WIDTH
+        return true
     }
 
     fun die() {

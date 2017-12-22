@@ -40,7 +40,7 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
                 direction = newDirection
             }
         }
-        if (!detectCollision(newPos)) {
+        if (newPos != pos && !detectCollision(newPos)) {
             pos = newPos
         }
     }
@@ -68,7 +68,7 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
         return nextDirection
     }
 
-    /** Returns true when a collision is found at the new position. */
+    /** Returns true when a collision is found at the new position and item can't move to it. */
     open fun detectCollision(newPos: Vector2): Boolean {
         return !level.isPositionFree(newPos, this)
     }
@@ -96,6 +96,10 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
 
     fun putAt(point: IntPoint) {
         pos = grid2Pos(point)
+    }
+
+    override fun toString(): String {
+        return gridPos.toString()
     }
 }
 
@@ -142,5 +146,7 @@ class Apple(level: Level, pos: IntPoint)
             else -> NONE
         }
     }
+
+    fun isFalling() = state in listOf(FALLING_SLOW, FALLING_FAST)
 
 }

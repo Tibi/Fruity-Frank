@@ -1,6 +1,8 @@
 package tibi.fruity
 
+import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Apple.AppleState.*
@@ -124,29 +126,52 @@ class Apple(level: Level, pos: IntPoint)
                 FALLING_SLOW -> 0.1f
                 else -> 1.0f
             }
+            anim = if (value == CRASHING) level.appleCrashAnim else null
             field = value
         }
 
+    var animTime = 0f
+    var anim: Animation<AtlasRegion>? = null
+
     override fun update(deltaTime: Float) {
-        if (state == FALLING_SLOW && pos != grid2Pos(gridPos) && pos.y < grid2Pos(gridPos).y + CELL_HEIGHT - 5) {
+        if (state == FALLING_SLOW && pos != grid2Pos(gridPos) && pos.y < grid2Pos(gridPos).y + CELL_HEIGHT - 3) {
             state = FALLING_FAST
         }
         super.update(deltaTime)
+        if (state == PUSHED) {
+            state = IDLE
+            direction = NONE
+        }
+        if (anim != null) {
+            animTime += deltaTime
+            if (animTime > 1.2f) {
+                level.deadApples.add(this)
+            }
+        }
+    }
+
+    override fun render(batch: SpriteBatch) {
+        val frame = anim?.getKeyFrame(animTime) ?: textureRegion
+        batch.draw(frame, pos.x, pos.y)
     }
 
     override fun getNewDirection(closestGridPos: IntPoint): Direction {
-        val pos = gridPos.plus(0, -1)
+        val below = closestGridPos.plus(0, -1)
         state = when {
-            level.highBlackBlocks.contains(pos) -> FALLING_FAST
-            level.blackBlocks.contains(pos) -> FALLING_SLOW
-            else -> IDLE
+            level.highBlackBlocks.contains(below) -> FALLING_FAST
+            level.blackBlocks.contains(below) -> FALLING_SLOW
+            else -> if (state == FALLING_FAST || state == FALLING_SLOW) CRASHING else state
         }
         return when (state) {
             FALLING_FAST, FALLING_SLOW -> DOWN
-            else -> NONE
+            IDLE, CRASHING -> NONE
+            else -> direction
         }
     }
 
-    fun isFalling() = state in listOf(FALLING_SLOW, FALLING_FAST)
+    fun push(direction: Direction) {
+        state = PUSHED
+        move(direction)
+    }
 
 }

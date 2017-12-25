@@ -33,6 +33,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val apples = ArrayList<Apple>()
+    val deadApples = ArrayList<Apple>()
     val monsters = ArrayList<Perso>()
     val blackBlocks = HashSet<IntPoint>()
     val highBlackBlocks = HashSet<IntPoint>()
@@ -42,6 +43,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
+    val appleCrashAnim = Animation(.40f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     private val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
 
@@ -108,6 +110,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
+        apples.removeAll(deadApples)
+        deadApples.clear()
     }
 
     override fun render(deltaTime: Float) {
@@ -278,7 +282,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         fruits.remove(fruit)
         dig(fruit.gridPos)
     }
-
 }
 
 

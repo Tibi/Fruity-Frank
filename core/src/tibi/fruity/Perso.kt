@@ -71,10 +71,10 @@ class Frank(level: Level, atlas: TextureAtlas)
             die()
         }
         level.fruits.find { it.collides(this) }?.let { level.eat(it) }
-        return level.apples.find { it.collides(this) }?.let { pushApple(it, newPos) } ?: false
+        return level.apples.find { it.collides(newPos) }?.let { !pushApple(it, newPos) } ?: false
     }
 
-    /** Returns whether the apple could be pushed or if Frank should stop. */
+    /** Returns true when the apple could be pushed or false if Frank should stop. */
     private fun pushApple(apple: Apple, newPos: Vector2): Boolean {
         // Can't push up or down
         if (pos.y != newPos.y || apple.state != IDLE) return false
@@ -87,7 +87,9 @@ class Frank(level: Level, atlas: TextureAtlas)
         // push apple against monster => ?
 //            return false
 //        }
-        apple.pos.x = newPos.x + directionSign * CELL_WIDTH
+        apple.push(if (directionSign > 0) Direction.RIGHT else Direction.LEFT)
+//        apple.pos.x = newPos.x + directionSign * CELL_WIDTH
+//        println(apple.pos.x)
         return true
     }
 

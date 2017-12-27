@@ -138,10 +138,6 @@ class Apple(level: Level, pos: IntPoint)
             state = FALLING_FAST
         }
         super.update(deltaTime)
-        if (state == PUSHED) {
-            state = IDLE
-            direction = NONE
-        }
         if (anim != null) {
             animTime += deltaTime
             if (animTime > 1.2f) {
@@ -150,12 +146,8 @@ class Apple(level: Level, pos: IntPoint)
         }
     }
 
-    override fun render(batch: SpriteBatch) {
-        val frame = anim?.getKeyFrame(animTime) ?: textureRegion
-        batch.draw(frame, pos.x, pos.y)
-    }
-
     override fun getNewDirection(closestGridPos: IntPoint): Direction {
+        if (state == PUSHED && !collides(level.player)) state = IDLE
         val below = closestGridPos.plus(0, -1)
         state = when {
             level.highBlackBlocks.contains(below) -> FALLING_FAST
@@ -172,6 +164,11 @@ class Apple(level: Level, pos: IntPoint)
     fun push(direction: Direction) {
         state = PUSHED
         move(direction)
+    }
+
+    override fun render(batch: SpriteBatch) {
+        val frame = anim?.getKeyFrame(animTime) ?: textureRegion
+        batch.draw(frame, pos.x, pos.y)
     }
 
 }

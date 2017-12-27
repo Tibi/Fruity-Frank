@@ -1,5 +1,8 @@
- - make touchpad usable and pretty
  - apples pushing, falling, crushing
+   * pushing apple down freezes Frank
+   * pushing left small border visible
+   * pushing should dig
+ - make touchpad usable and pretty
  - throw ball
  - halve all images, scaling will restore pixelisation
  - let monsters dig

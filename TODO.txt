@@ -1,11 +1,8 @@
- - apples pushing, falling, crushing
-   * don't create apples above the path
-   * falling apples should kill monsters and frank
-   * should apples crash when falling only from one cell up?
  - make touchpad usable and pretty
  - throw ball
  - halve all images, scaling will restore pixelisation
  - let monsters dig
+ - let monsters go for Frank
  - falling prune
  - bitmap font for score
  - color rotation: tinted sprite for black path on win

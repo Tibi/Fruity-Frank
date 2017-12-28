@@ -123,6 +123,7 @@ class Apple(level: Level, pos: IntPoint)
 
     private var animTime = 0f
     private var anim: Animation<AtlasRegion>? = null
+    private var fallingFor = 0
 
     override fun update(deltaTime: Float) {
         if (state == FALLING_SLOW && pos.y < grid2Pos(gridPos).y - 3) {
@@ -142,10 +143,20 @@ class Apple(level: Level, pos: IntPoint)
             state = IDLE
         }
         val below = gridPos.plus(0, -1)
-        state = when {
-            level.highBlackBlocks.contains(below) && level.fruitAt(below) == null -> FALLING_FAST
-            level.blackBlocks.contains(below) && level.fruitAt(below) == null -> FALLING_SLOW
-            else -> if (state == FALLING_FAST || state == FALLING_SLOW) CRASHING else state
+        val canFall = level.blackBlocks.contains(below) && level.fruitAt(below) == null
+        val canFallFast = level.highBlackBlocks.contains(below)
+        if (!isFalling()) {
+            fallingFor = 0
+            if (canFall && state != CRASHING) {
+                state = if (canFallFast) FALLING_FAST else FALLING_SLOW
+            }
+        } else {
+            fallingFor++
+            state = if (state == FALLING_SLOW || fallingFor < 3) {
+                if (!canFall) IDLE else if (canFallFast) FALLING_FAST else FALLING_SLOW
+            } else {  // falling really fast
+                if (canFallFast) FALLING_FAST else CRASHING
+            }
         }
         return when (state) {
             FALLING_FAST, FALLING_SLOW -> DOWN
@@ -177,5 +188,7 @@ class Apple(level: Level, pos: IntPoint)
         val frame = anim?.getKeyFrame(animTime) ?: textureRegion
         batch.draw(frame, pos.x, pos.y)
     }
+
+    fun isFalling() = state == FALLING_SLOW || state == FALLING_FAST
 
 }

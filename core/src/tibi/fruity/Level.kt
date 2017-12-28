@@ -71,12 +71,17 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             game.atlas.findRegion("fruits/" + it)
         }
         val randPoints = getRandomFreePoints()
+        var pointIndex = 0
         for (i in 0..20) {
             val textureIndex = randomTriangular(0f, levelNo + 1f, 0f).toInt()
-            fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints.pop(), 10))
+            fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints[pointIndex++], 10))
         }
         for (i in 0..10) {
-            apples.add(Apple(this, randPoints.pop()))
+            var point: IntPoint
+            do {
+                point = randPoints[pointIndex++]
+            } while (point.y == gatePos.y + 1)  // Don't put apples on the row above the gate
+            apples.add(Apple(this, point))
         }
         if (isAndroid) {
             touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))
@@ -87,12 +92,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), touchpadStage)
     }
 
-    private fun getRandomFreePoints(): ArrayDeque<IntPoint> {
+    private fun getRandomFreePoints(): List<IntPoint> {
         val allPoints = ArrayList<IntPoint>()
         (0 until GRID_WIDTH).forEach { x -> (0 until GRID_HEIGHT).forEach { y -> allPoints.add(IntPoint(x, y)) } }
         allPoints.removeAll(blackBlocks)
         allPoints.shuffle()
-        return ArrayDeque(allPoints)
+        return allPoints
     }
 
 
@@ -111,6 +116,20 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         apples.forEach { it.update(deltaTime) }
         apples.removeAll(deadApples)
         deadApples.clear()
+        handleCollisions()
+    }
+
+    private fun handleCollisions() {
+        val fallingApples = apples.filter { it.isFalling() }
+        if ((monsters + fallingApples).any { it.collides(player) }) {
+            gameOver()
+            return
+        }
+        monsters.removeAll(monsters.filter { monster -> fallingApples.any { it.collides(monster) } })
+    }
+
+    private fun gameOver() {
+        println("GAME OVER!!!")
     }
 
     override fun render(deltaTime: Float) {

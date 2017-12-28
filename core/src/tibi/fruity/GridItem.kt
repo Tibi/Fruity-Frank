@@ -42,8 +42,12 @@ abstract class GridItem(val level: Level, gridPos: IntPoint, var speedFactor: Fl
                 direction = newDirection
             }
         }
-        if (newPos != pos && !detectCollision(newPos)) {
-            pos = newPos
+        if (newPos != pos) {
+            if (detectCollision(newPos)) {
+                direction = direction.reverse()
+            } else {
+                pos = newPos
+            }
         }
     }
 

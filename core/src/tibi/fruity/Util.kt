@@ -2,6 +2,7 @@ package tibi.fruity
 
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
+import tibi.fruity.Direction.*
 
 
 const val SCREEN_WIDTH = 649F // was 646 in original game, 3 columns were only 40 px wide
@@ -38,6 +39,13 @@ fun pos2Grid(pos: Vector2) = IntPoint(MathUtils.floor((pos.x - GRID_START_X) / C
 data class IntPoint(val x: Int, val y: Int) {
     override fun toString() = "$x, $y"
     fun plus(ox: Int, oy: Int) = IntPoint(x + ox, y + oy)
+    operator fun plus(direction: Direction) = when (direction) {
+        NONE -> this
+        LEFT -> IntPoint(x - 1, y)
+        RIGHT -> IntPoint(x + 1, y)
+        UP -> IntPoint(x, y + 1)
+        DOWN -> IntPoint(x, y - 1)
+    }
 }
 
 

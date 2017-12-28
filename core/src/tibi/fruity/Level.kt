@@ -43,8 +43,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
-    val appleCrashAnim = Animation(.40f, game.atlas.findRegions("fruits/apple_crash"))
-    private val gate = Animation(.40f, game.atlas.findRegions("backgrounds/gate"), LOOP)
+    val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
+    private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     private val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
 
     private var stateTime: Float = 0f
@@ -98,7 +98,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     private fun update(dt: Float) {
         val deltaTime = if (dt > 0.3f) 0.3f else dt
-        processInput()
         stateTime += deltaTime
         monsterSpawnStateTime += deltaTime
         if (monsterSpawnStateTime > MONSTER_SPAWN_RATE) {
@@ -123,10 +122,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         game.batch.begin()
         game.batch.disableBlending()
 
-        // Background
-        TiledDrawable(bg).draw(game.batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
         // Header
         game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
+        // Background
+        TiledDrawable(bg).draw(game.batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
@@ -137,10 +136,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         val gridPos = grid2Pos(gatePos)
         game.batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)
 
-        player.render(game.batch)
         monsters.forEach { it.render(game.batch) }
         fruits.forEach { it.render(game.batch) }
         apples.forEach { it.render(game.batch) }
+        player.render(game.batch)
 
         game.batch.end()
 
@@ -151,25 +150,25 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    private fun processInput() {
+    fun getInputDirection(): Direction {
         val tx = touchpad.knobPercentX
         val ty = touchpad.knobPercentY
         if (abs(tx) + abs(ty) > .1) {
-            val teta = atan2(ty, tx) * radiansToDegrees
-            when (teta) {
-                in  -45..  45 -> { player.requestMove(RIGHT); return }
-                in   45.. 135 -> { player.requestMove(UP)   ; return }
-                in  135.. 180 -> { player.requestMove(LEFT) ; return }
-                in -180..-135 -> { player.requestMove(LEFT) ; return }
-                in -135..- 45 -> { player.requestMove(DOWN) ; return }
+            return when (atan2(ty, tx) * radiansToDegrees) {
+                in  -45..  45 -> RIGHT
+                in   45.. 135 -> UP
+                in  135.. 180 -> LEFT
+                in -180..-135 -> LEFT
+                in -135..- 45 -> DOWN
+                else -> NONE  // never happens
             }
         }
-        when {
-            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)      ||  tx >  .1 -> player.requestMove(RIGHT)
-            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)       ||  tx < -.1 -> player.requestMove(LEFT)
-            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) ||  ty >  .1 -> player.requestMove(UP)
-            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)  ||  ty < -.1 -> player.requestMove(DOWN)
-            else -> player.requestMove(Direction.NONE)
+        return when {
+            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)      ||  tx >  .1 -> RIGHT
+            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)       ||  tx < -.1 -> LEFT
+            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) ||  ty >  .1 -> UP
+            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)  ||  ty < -.1 -> DOWN
+            else -> NONE
         }
     }
 
@@ -207,7 +206,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     /** Returns whether a monster could be spawned. */
     private fun spawnMonster(): Boolean {
-        return false
         if (monsters.size > 3 + levelNo) {
             return false
         }
@@ -245,23 +243,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
     }
 
-    fun dig(pos: IntPoint) {
+    fun dig(pos: IntPoint, dir: Direction) {
         blackBlocks.add(pos)
-    }
-    fun dig(dir: Direction, oldPos: IntPoint, newPos: IntPoint) {
-//        println("digging: $oldPos -> $newPos")
-        if (dir == Direction.RIGHT || dir == Direction.UP) {
-            blackBlocks.add(newPos)
-        } else {
-            blackBlocks.add(oldPos)
-        }
-        if (dir == Direction.DOWN && oldPos.y != 0) {
-            highBlackBlocks.add(newPos)  // adds it in advance
-//            println("high $newPos")
-        }
-        if (dir == Direction.UP && oldPos.y != GRID_HEIGHT - 1) {
-            highBlackBlocks.add(oldPos)
-//            println("high $oldPos")
+        if (dir == DOWN) {
+            highBlackBlocks.add(pos)
+        } else if (dir == UP) {
+            highBlackBlocks.add(pos.copy(y = pos.y - 1))
         }
     }
 
@@ -280,8 +267,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         score += fruit.score
         println("MIAM niam + $score")
         fruits.remove(fruit)
-        dig(fruit.gridPos)
+        dig(fruit.gridPos, NONE)
     }
+
+    fun fruitAt(pos: IntPoint) = (fruits + apples).firstOrNull { it.gridPos == pos }
+    fun isOut(pos: IntPoint) = pos.x < 0 || pos.x >= GRID_WIDTH || pos.y < 0 || pos.y >= GRID_HEIGHT
+
 }
 
 

@@ -58,7 +58,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val touchpadStyle = TouchpadStyle()
     private val touchpad = Touchpad(10f, touchpadStyle)
 
-    private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
+    private val isAndroid = true//Gdx.app.type == Application.ApplicationType.Android
 
     init {
         cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)

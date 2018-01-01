@@ -123,6 +123,9 @@ class Apple(level: Level, pos: IntPoint)
                 else -> 1.0f
             }
             anim = if (value == CRASHING) level.appleCrashAnim else null
+            //TODO check if it works
+            // just an idea so that apples block monsters and balls
+            if (state == IDLE) level.blackBlocks.add(gridPos)
             field = value
         }
 

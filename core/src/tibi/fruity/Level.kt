@@ -20,8 +20,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
-import java.util.*
-import kotlin.collections.ArrayList
 import kotlin.math.abs
 import kotlin.math.max
 import com.badlogic.gdx.utils.Array as GdxArray
@@ -46,7 +44,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
-    private val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
+    private val gatePos = IntPoint(2,2)//IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
 
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f
@@ -267,8 +265,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         if (!player.hasBall) {
             return
         }
-        balls.add(Ball(this, game.atlas, player.pos, player.lastDir))
-
+        balls.add(Ball(this, game.atlas, player.pos.add(0f, CELL_HEIGHT / 2f), player.lastDir))
     }
 
     fun dig(pos: IntPoint, dir: Direction) {
@@ -299,7 +296,25 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun fruitAt(pos: IntPoint) = (fruits + apples).firstOrNull { it.gridPos == pos }
+
     fun isOut(pos: IntPoint) = pos.x < 0 || pos.x >= GRID_WIDTH || pos.y < 0 || pos.y >= GRID_HEIGHT
+
+    fun getWalls(gpos: IntPoint, speed: Vector2): Set<Direction> {
+        val walls = HashSet<Direction>()
+        if (speed.x > 0f && gpos + RIGHT !in blackBlocks) {
+            walls.add(RIGHT)
+        }
+        if (speed.x < 0f && gpos + LEFT !in blackBlocks) {
+            walls.add(LEFT)
+        }
+        if (speed.y > 0f && (gpos !in highBlackBlocks || gpos + UP !in blackBlocks)) {
+            walls.add(UP)
+        }
+        if (speed.y < 0f && gpos + DOWN !in highBlackBlocks) {
+            walls.add(DOWN)
+        }
+        return walls
+    }
 
 }
 

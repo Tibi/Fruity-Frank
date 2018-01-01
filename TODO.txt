@@ -5,12 +5,14 @@
  - let monsters go for Frank
  - falling prune
  - 3 lives then game over
- - bitmap font for score
+  - bitmap font for score
  - other screens: intro, high scores, etc..
  - color rotation: tinted sprite for black path on win
  - bonus and fraise monsters
  - sound
  - music
- - proguard?
+ - kdx: use asset manager?
+ - kdx: use ashley?
+- proguard?
  - icon
  - publish to Google Play?

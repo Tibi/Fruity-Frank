@@ -51,8 +51,11 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
 }
 
 
+/** The Hero! */
 class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
+
+    var hasBall = true
 
     override fun getNewDirection(): Direction {
         val dir = level.getInputDirection()
@@ -71,6 +74,7 @@ class Frank(level: Level, atlas: TextureAtlas)
         level.dig(pos, direction)
     }
 
+
     //FIXME never really called
     override fun detectCollision(newPos: Vector2): Boolean {
         if (level.monsters.any { it.collides(this) }) {
@@ -79,7 +83,6 @@ class Frank(level: Level, atlas: TextureAtlas)
         }
         return true
     }
-
 
     fun die() {
         println("DEAD")

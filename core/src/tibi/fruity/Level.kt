@@ -35,6 +35,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val apples = ArrayList<Apple>()
     val deadApples = ArrayList<Apple>()
     val monsters = ArrayList<Perso>()
+    val balls = ArrayList<Ball>()
     val blackBlocks = HashSet<IntPoint>()
     val highBlackBlocks = HashSet<IntPoint>()
 
@@ -58,7 +59,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private val touchpadStyle = TouchpadStyle()
     private val touchpad = Touchpad(10f, touchpadStyle)
 
-    private val isAndroid = true//Gdx.app.type == Application.ApplicationType.Android
+    private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
 
     init {
         cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -110,6 +111,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
                 monsterSpawnStateTime = 0f
             }
         }
+        balls.forEach { it.update(dt) }
         player.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
@@ -159,6 +161,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         fruits.forEach { it.render(game.batch) }
         apples.forEach { it.render(game.batch) }
         player.render(game.batch)
+
+        balls.forEach { it.render(game.batch) }
 
         game.batch.end()
 
@@ -243,11 +247,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     class FruityInput(private val level: Level) : InputAdapter() {
         override fun keyDown(keycode: Int): Boolean {
-            if (keycode == Keys.RIGHT_BRACKET) level.throwBall()
+            if (keycode == Keys.RIGHT_BRACKET || keycode == Keys.SPACE) level.throwBall()
             else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
             return true
         }
 
+        /** Moves the touchpad when screen touched. */
         override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
             if (button != Input.Buttons.LEFT || pointer > 0) return false
             val vector3 = Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
@@ -259,7 +264,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun throwBall() {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        if (!player.hasBall) {
+            return
+        }
+        balls.add(Ball(this, game.atlas, player.pos, player.lastDir))
+
     }
 
     fun dig(pos: IntPoint, dir: Direction) {

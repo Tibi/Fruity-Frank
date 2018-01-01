@@ -16,6 +16,11 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
     var targetGridPos = gridPos
     var speed = Vector2()
     var direction = NONE
+        set(value) {
+            if (value != NONE) lastDir = value
+            field = value
+        }
+    var lastDir = RIGHT
 
     open fun update(deltaTime: Float) {
         setSpeed()

@@ -46,6 +46,13 @@ data class IntPoint(val x: Int, val y: Int) {
         UP -> IntPoint(x, y + 1)
         DOWN -> IntPoint(x, y - 1)
     }
+
+    companion object {
+        val X_POS = IntPoint(1,0)
+        val X_NEG = IntPoint(-1,0)
+        val Y_POS = IntPoint(0,1)
+        val Y_NEG = IntPoint(0,-1)
+    }
 }
 
 

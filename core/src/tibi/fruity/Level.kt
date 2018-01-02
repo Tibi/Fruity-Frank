@@ -27,7 +27,6 @@ import com.badlogic.gdx.utils.Array as GdxArray
 
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
-
     val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val apples = ArrayList<Apple>()
@@ -314,6 +313,14 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             walls.add(DOWN)
         }
         return walls
+    }
+
+    fun hasWall(gpos: IntPoint, wallDir: Direction) = when (wallDir) {
+        RIGHT -> gpos + RIGHT !in blackBlocks
+        LEFT  -> gpos + LEFT !in blackBlocks
+        UP    -> gpos !in highBlackBlocks || gpos + UP !in blackBlocks
+        DOWN  -> gpos + DOWN !in highBlackBlocks
+        NONE  -> false
     }
 
 }

@@ -213,7 +213,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         for (x in 0 until GRID_WIDTH) {
             val block = IntPoint(x, pt.y)
             blackBlocks.add(block)
-            highBlackBlocks.add(block)
         }
         for (y in 0 until GRID_HEIGHT) {
             val block = IntPoint(pt.x, y)

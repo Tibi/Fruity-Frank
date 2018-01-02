@@ -1,3 +1,4 @@
+ - why is frank jumping when throwing?
  - make touchpad usable and pretty
  - throw ball
  - halve all images, scaling will restore pixelisation

@@ -13,8 +13,7 @@ const val GRID_START_X = 17F
 const val GRID_START_Y = 7F
 
 const val CELL_WIDTH = 41F
-const val CELL_HEIGHT = 28F
-const val GRID_MARGIN = 6F
+const val CELL_HEIGHT = 34F
 
 const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
@@ -32,26 +31,19 @@ enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
 }
 
 fun grid2Pos(gridPos: IntPoint) = Vector2(GRID_START_X + gridPos.x * CELL_WIDTH,
-                                          GRID_START_Y + gridPos.y * (CELL_HEIGHT + GRID_MARGIN))
+                                          GRID_START_Y + gridPos.y * CELL_HEIGHT )
 fun pos2Grid(pos: Vector2) = IntPoint(MathUtils.floor((pos.x - GRID_START_X) / CELL_WIDTH),
-                                      MathUtils.floor((pos.y - GRID_START_Y) / (CELL_HEIGHT + GRID_MARGIN)))
+                                      MathUtils.floor((pos.y - GRID_START_Y) / CELL_HEIGHT))
 
 data class IntPoint(val x: Int, val y: Int) {
     override fun toString() = "$x, $y"
     fun plus(ox: Int, oy: Int) = IntPoint(x + ox, y + oy)
     operator fun plus(direction: Direction) = when (direction) {
-        NONE -> this
-        LEFT -> IntPoint(x - 1, y)
+        NONE  -> this
+        LEFT  -> IntPoint(x - 1, y)
         RIGHT -> IntPoint(x + 1, y)
-        UP -> IntPoint(x, y + 1)
-        DOWN -> IntPoint(x, y - 1)
-    }
-
-    companion object {
-        val X_POS = IntPoint(1,0)
-        val X_NEG = IntPoint(-1,0)
-        val Y_POS = IntPoint(0,1)
-        val Y_NEG = IntPoint(0,-1)
+        UP    -> IntPoint(x, y + 1)
+        DOWN  -> IntPoint(x, y - 1)
     }
 }
 

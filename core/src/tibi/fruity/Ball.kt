@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.*
+import kotlin.math.abs
 
 /** The ball frank throws. */
 class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Direction) {
@@ -14,66 +15,56 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
 
     fun update(deltaTime: Float) {
 
-        val (newPos, newSpeed) = updateMove(deltaTime, pos.cpy(), speed.cpy())
-        pos.set(newPos)
-        speed.set(newSpeed)
-
+        updateMove(deltaTime)
+      
         // Kill monsters
         level.monsters.filter { it.collides(pos) }.forEach { level.monsters.remove(it) }
     }
 
     /** returns newPos, newSpeed */
-    fun updateMove(deltaTime: Float, posLoc: Vector2, speedLoc: Vector2): Pair<Vector2, Vector2> {
-        var newPos = posLoc + speedLoc * deltaTime
+    fun updateMove(deltaTime: Float) {
+        val newPos = pos + speed * deltaTime
         val newGpos = pos2Grid(newPos)
 
-        // TODO consider other corners of the ball depending on the direction?
-        val gpos = pos2Grid(posLoc)
+        // TODO consider other corners of the ball depending on the direction
+        val gpos = pos2Grid(pos)
 
-        if (gpos != newGpos) {  // check for rebound
-            /*
-
-        for each of the 2 borders of the cell:
-            in the one that intersects:
-                 if it's a wall, rebound
-                 else update in the cell on the other side of the wall, pos = intersect, deltatime reduced
-
-              */
-
-            val walls = getWalls(speedLoc)
-            for (wallDir in walls) {
-                val (wall1, wall2) = wallPoints(gpos, wallDir)
-                val intersection = Vector2()
-                if (!Intersector.intersectSegments(wall1, wall2, posLoc, newPos, intersection)) {
-                    continue
-                }
-                newPos = intersection
-                if (level.hasWall(gpos, wallDir)) {
-                    speedLoc.set(reboundSpeed(wallDir))
-                } else {
-                    newPos =
-                }
-            }
-
-            /*
-        val walls = level.getWalls(gpos, speed)
-        for (wallDir in walls) {
+        if (gpos == newGpos) {
+            pos.set(newPos)
+            return
+        }
+        // check for rebound
+        for (wallDir in getBorders(speed)) {
             val (wall1, wall2) = wallPoints(gpos, wallDir)
             val intersection = Vector2()
-            if (Intersector.intersectSegments(wall1, wall2, pos, newPos, intersection)) {
-                newPos = intersection
-                rebound(wallDir)
-            } else {
-                if (newGpos !in adjacent4(gpos)) {
-                    println("OUT")
-                }
+            if (!Intersector.intersectSegments(wall1, wall2, pos, newPos, intersection)) {
+                continue  // wrong border
             }
-        }
-        */
+            pos.set(intersection)
+            if (level.hasWall(gpos, wallDir)) {
+                //TODO for top and right, move away from wall
+                bringInCell(pos, gpos)
+                speed.set(reboundSpeed(wallDir))
+            } else {
+                bringInCell(pos, newGpos)
+                updateMove(deltaTime / 2f)  //TODO compute real remaining dt?
+            }
+            break
         }
     }
 
-    fun getWalls(speed: Vector2): Set<Direction> {
+    private fun bringInCell(pos: Vector2, gpos: IntPoint) {
+        val grid = grid2Pos(gpos)
+        val epsilon = 0.001f
+        when {
+            abs(grid.x - pos.x) < epsilon -> pos.x = grid.x
+            abs(grid.x + CELL_WIDTH - pos.x) < epsilon -> pos.x = grid.x + CELL_WIDTH - epsilon
+            abs(grid.y - pos.y) < epsilon -> pos.y = grid.y
+            abs(grid.y + CELL_HEIGHT - pos.y) < epsilon -> pos.y = grid.y + CELL_HEIGHT - epsilon
+        }
+    }
+
+    fun getBorders(speed: Vector2): Set<Direction> {
         val walls = HashSet<Direction>()
         if (speed.x > 0f) {
             walls.add(RIGHT)
@@ -94,10 +85,10 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
         val pos = grid2Pos(gpos)
         return when (wallDir) {
             RIGHT -> Pair(Vector2(pos.x + CELL_WIDTH, pos.y), Vector2(pos.x + CELL_WIDTH, pos.y + CELL_HEIGHT))
-            LEFT -> Pair(Vector2(pos.x, pos.y), Vector2(pos.x, pos.y + CELL_HEIGHT))
-            UP -> Pair(Vector2(pos.x, pos.y + CELL_HEIGHT), Vector2(pos.x + CELL_WIDTH, pos.y + CELL_HEIGHT))
-            DOWN -> Pair(Vector2(pos.x, pos.y), Vector2(pos.x + CELL_WIDTH, pos.y))
-            NONE -> Pair(Vector2(), Vector2())
+            LEFT  -> Pair(Vector2(pos.x, pos.y), Vector2(pos.x, pos.y + CELL_HEIGHT))
+            UP    -> Pair(Vector2(pos.x, pos.y + CELL_HEIGHT), Vector2(pos.x + CELL_WIDTH, pos.y + CELL_HEIGHT))
+            DOWN  -> Pair(Vector2(pos.x, pos.y), Vector2(pos.x + CELL_WIDTH, pos.y))
+            NONE  -> Pair(Vector2(), Vector2())
         }
     }
 
@@ -108,13 +99,6 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
     }
 
 
-    private fun adjacent4(gpos: IntPoint) = listOf(
-            gpos.plus(-1,0),
-            gpos.plus(1,0),
-            gpos.plus(0, -1),
-            gpos.plus(0, 1)
-    )
-
     fun render(batch: SpriteBatch) {
         batch.draw(tex, pos.x, pos.y)
     }
@@ -122,8 +106,8 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
     fun ballSpeed(frankDir: Direction) = when (frankDir) {
         UP -> Vector2(-1f,  1f)
         DOWN -> Vector2(-1f, -1f)
-        RIGHT -> Vector2(1f, -1f)
+        RIGHT -> Vector2(1f, 1f)
         LEFT -> Vector2(-1f, -1f)
-        NONE -> Vector2(0f, 0f)
+        NONE -> Vector2(1f, 1f)
     }
 }

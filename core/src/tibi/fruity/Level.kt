@@ -30,7 +30,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val player = Frank(this, game.atlas)
     val fruits = ArrayList<Fruit>()
     val apples = ArrayList<Apple>()
-    val deadApples = ArrayList<Apple>()
     val monsters = ArrayList<Perso>()
     val balls = ArrayList<Ball>()
     val blackBlocks = HashSet<IntPoint>()
@@ -109,26 +108,25 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             }
         }
         balls.forEach { it.update(dt) }
+        balls.removeIf { it.dead }
         player.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
-        apples.removeAll(deadApples)
-        deadApples.clear()
+        apples.removeIf { it.dead }
         handleCollisions()
     }
 
     private fun handleCollisions() {
         val fallingApples = apples.filter { it.isFalling() }
         if ((monsters + fallingApples).any { it.collides(player) }) {
-            gameOver()
+            killFrank()
             return
         }
         monsters.removeAll(monsters.filter { monster -> fallingApples.any { it.collides(monster) } })
     }
 
-    private fun gameOver() {
-        println("GAME OVER!!!")
+    private fun killFrank() {
     }
 
     override fun render(deltaTime: Float) {

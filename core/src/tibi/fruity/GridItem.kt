@@ -1,11 +1,8 @@
 package tibi.fruity
 
-import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
-import tibi.fruity.Apple.AppleState.*
 import tibi.fruity.Direction.*
 
 
@@ -108,95 +105,4 @@ open class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, 
     override fun render(batch: SpriteBatch) {
         batch.draw(textureRegion, pos.x, pos.y)
     }
-}
-
-
-class Apple(level: Level, pos: IntPoint)
-    : Fruit(level, level.appleTex, pos, 0) {
-
-    enum class AppleState { IDLE, PUSHED, FALLING_SLOW, FALLING_FAST, CRASHING }
-
-    var state = IDLE
-        set(value) {
-            speedFactor = when (value) {
-                FALLING_SLOW -> 0.1f
-                else -> 1.0f
-            }
-            anim = if (value == CRASHING) level.appleCrashAnim else null
-            //TODO check if it works
-            // just an idea so that apples block monsters and balls
-            if (state == IDLE) level.blackBlocks.add(gridPos)
-            field = value
-        }
-
-    private var animTime = 0f
-    private var anim: Animation<AtlasRegion>? = null
-    private var fallingFor = 0
-
-    override fun update(deltaTime: Float) {
-        if (state == FALLING_SLOW && pos.y < grid2Pos(gridPos).y - 3) {
-            state = FALLING_FAST
-        }
-        super.update(deltaTime)
-        anim?.let { anima ->
-            animTime += deltaTime
-            if (animTime > anima.animationDuration) {
-                level.deadApples.add(this)
-            }
-        }
-    }
-
-    override fun getNewDirection(): Direction {
-        if (state == PUSHED) {
-            state = IDLE
-        }
-        val below = gridPos.plus(0, -1)
-        val canFall = level.blackBlocks.contains(below) && level.fruitAt(below) == null
-        val canFallFast = level.highBlackBlocks.contains(below)
-        if (!isFalling()) {
-            fallingFor = 0
-            if (canFall && state != CRASHING) {
-                state = if (canFallFast) FALLING_FAST else FALLING_SLOW
-            }
-        } else {
-            fallingFor++
-            state = if (state == FALLING_SLOW || fallingFor < 3) {
-                if (!canFall) IDLE else if (canFallFast) FALLING_FAST else FALLING_SLOW
-            } else {  // falling really fast
-                if (canFallFast) FALLING_FAST else CRASHING
-            }
-        }
-        return when (state) {
-            FALLING_FAST, FALLING_SLOW -> DOWN
-            IDLE, CRASHING -> NONE
-            else -> direction
-        }
-    }
-
-    override fun dig(pos: IntPoint, direction: Direction) {
-        level.dig(pos, direction)
-    }
-
-    // TODO put all this in move()?
-    fun push(dir: Direction): Boolean {
-        if (state != IDLE || dir != LEFT && dir != RIGHT) {
-            return false
-        }
-        val newPos = gridPos + dir
-        if (level.isOut(newPos) || level.fruitAt(newPos) != null) {
-            return false
-        }
-        state = PUSHED
-        move(dir)
-        return true
-    }
-
-    override fun render(batch: SpriteBatch) {
-        renderDigging(batch)
-        val frame = anim?.getKeyFrame(animTime) ?: textureRegion
-        batch.draw(frame, pos.x, pos.y)
-    }
-
-    fun isFalling() = state == FALLING_SLOW || state == FALLING_FAST
-
 }

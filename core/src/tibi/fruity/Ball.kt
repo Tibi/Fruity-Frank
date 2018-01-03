@@ -12,25 +12,32 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
 
     val speed = ballSpeed(frankDir) * level.speed
     val tex = atlas.findRegion("frank/ball")
+    val size = Vector2(tex.originalWidth.toFloat(), tex.originalHeight.toFloat())
+    var dead = false
 
     fun update(deltaTime: Float) {
 
         updateMove(deltaTime)
       
         // Kill monsters
-        level.monsters.filter { it.collides(pos) }.forEach { level.monsters.remove(it) }
+        level.monsters.firstOrNull { it.collides(pos) }?.let {
+            level.monsters.remove(it)
+            dead = true
+        }
     }
 
     /** returns newPos, newSpeed */
     fun updateMove(deltaTime: Float) {
+
+        movePosToCorner()
+        val gpos = pos2Grid(pos)
+
         val newPos = pos + speed * deltaTime
         val newGpos = pos2Grid(newPos)
 
-        // TODO consider other corners of the ball depending on the direction
-        val gpos = pos2Grid(pos)
-
         if (gpos == newGpos) {
-            pos.set(newPos)
+            restorePosFromCorner()
+            pos.set(pos + speed * deltaTime)
             return
         }
         // check for rebound
@@ -42,15 +49,28 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
             }
             pos.set(intersection)
             if (level.hasWall(gpos, wallDir)) {
-                //TODO for top and right, move away from wall
                 bringInCell(pos, gpos)
+                restorePosFromCorner()
                 speed.set(reboundSpeed(wallDir))
             } else {
                 bringInCell(pos, newGpos)
+                restorePosFromCorner()
                 updateMove(deltaTime / 2f)  //TODO compute real remaining dt?
             }
             break
         }
+    }
+
+    /** Moves pos to the corner that can hit a wall */
+    private fun movePosToCorner() {
+        if (speed.x > 0) pos.x += size.x
+        if (speed.y > 0) pos.y += size.y + LOW_CELL_CEILING
+    }
+
+    /** Moves pos back to the lower left corner */
+    private fun restorePosFromCorner() {
+        if (speed.x > 0) pos.x -= size.x
+        if (speed.y > 0) pos.y -= size.y + LOW_CELL_CEILING
     }
 
     private fun bringInCell(pos: Vector2, gpos: IntPoint) {

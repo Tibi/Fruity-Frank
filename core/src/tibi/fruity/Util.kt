@@ -14,6 +14,8 @@ const val GRID_START_Y = 7F
 
 const val CELL_WIDTH = 41F
 const val CELL_HEIGHT = 34F
+/**  How much smaller low cells are */
+const val LOW_CELL_CEILING = 3f
 
 const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10

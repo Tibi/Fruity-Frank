@@ -1,4 +1,9 @@
+ - now balls kill monsters without touching them
  - why is frank jumping when throwing?
+ - fallen apples should block monsters and balls
+ - frank catch ball
+ - render frank without ball when no ball left
+ - apples should block monsters and balls
  - make touchpad usable and pretty
  - throw ball
  - halve all images, scaling will restore pixelisation
@@ -6,7 +11,7 @@
  - let monsters go for Frank
  - falling prune
  - 3 lives then game over
-  - bitmap font for score
+ - bitmap font for score
  - other screens: intro, high scores, etc..
  - color rotation: tinted sprite for black path on win
  - bonus and fraise monsters
@@ -14,6 +19,6 @@
  - music
  - kdx: use asset manager?
  - kdx: use ashley?
-- proguard?
+ - proguard?
  - icon
  - publish to Google Play?

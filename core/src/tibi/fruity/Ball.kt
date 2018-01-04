@@ -20,7 +20,7 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
         updateMove(deltaTime)
       
         // Kill monsters
-        level.monsters.firstOrNull { it.collides(pos) }?.let {
+        level.monsters.firstOrNull { it.collides(pos, tex.size()) }?.let {
             level.monsters.remove(it)
             dead = true
         }

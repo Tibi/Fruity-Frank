@@ -204,7 +204,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun isPositionFree(pos: Vector2, toExclude: GridItem): Boolean {
-        return monsters.filter { it != toExclude }.none { it.collides(pos) }
+        //TODO used?
+        return monsters.filter { it != toExclude }.none { it.collides(pos, gridItemSize) }
     }
 
     private fun drawBlackCross(pt: IntPoint) {
@@ -226,7 +227,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         if (monsters.size > 3 + levelNo) {
             return false
         }
-        if (monsters.any { it.collides(grid2Pos((gatePos))) }) {
+        if (monsters.any { it.collides(grid2Pos(gatePos), gate.keyFrames[0].size()) }) {
             return false
         }
         val monster = if (randomBoolean()) {
@@ -294,23 +295,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     fun fruitAt(pos: IntPoint) = (fruits + apples).firstOrNull { it.gridPos == pos }
 
     fun isOut(pos: IntPoint) = pos.x < 0 || pos.x >= GRID_WIDTH || pos.y < 0 || pos.y >= GRID_HEIGHT
-
-    fun getWalls(gpos: IntPoint, speed: Vector2): Set<Direction> {
-        val walls = HashSet<Direction>()
-        if (speed.x > 0f && gpos + RIGHT !in blackBlocks) {
-            walls.add(RIGHT)
-        }
-        if (speed.x < 0f && gpos + LEFT !in blackBlocks) {
-            walls.add(LEFT)
-        }
-        if (speed.y > 0f && (gpos !in highBlackBlocks || gpos + UP !in blackBlocks)) {
-            walls.add(UP)
-        }
-        if (speed.y < 0f && gpos + DOWN !in highBlackBlocks) {
-            walls.add(DOWN)
-        }
-        return walls
-    }
 
     fun hasWall(gpos: IntPoint, wallDir: Direction) = when (wallDir) {
         RIGHT -> gpos + RIGHT !in blackBlocks

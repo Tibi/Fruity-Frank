@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.*
 
+val gridItemSize = Vector2(CELL_WIDTH, CELL_HEIGHT - LOW_CELL_CEILING)
 
 /** A game object that can move along the grid. */
 abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor: Float) {
@@ -66,9 +67,10 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
 
     abstract fun render(batch: SpriteBatch)
 
-    fun collides(other: GridItem) = collides(other.pos)
-    fun collides(bottomLeft: Vector2) = pos.x in bottomLeft.x-CELL_WIDTH+1 .. bottomLeft.x+CELL_WIDTH-1
-                                     && pos.y in bottomLeft.y-CELL_HEIGHT  .. bottomLeft.y+CELL_HEIGHT
+    fun collides(other: GridItem) = collides(other.pos, gridItemSize)
+    fun collides(otherPos: Vector2, otherSize: Vector2) =
+               pos.x in otherPos.x - gridItemSize.x + 1 .. otherPos.x + otherSize.x - 1
+            && pos.y in otherPos.y - gridItemSize.y     .. otherPos.y + otherSize.y
 
     fun move(to: Direction) {
         direction = to

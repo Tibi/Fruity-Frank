@@ -1,4 +1,3 @@
- - now balls kill monsters without touching them
  - why is frank jumping when throwing?
  - fallen apples should block monsters and balls
  - frank catch ball

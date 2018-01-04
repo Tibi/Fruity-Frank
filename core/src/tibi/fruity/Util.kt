@@ -1,5 +1,6 @@
 package tibi.fruity
 
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.*
@@ -53,3 +54,5 @@ data class IntPoint(val x: Int, val y: Int) {
 operator fun Vector2.times(factor: Float) = Vector2(x * factor, y * factor)
 operator fun Vector2.plus(other: Vector2) = Vector2(x + other.x, y + other.y)
 operator fun Vector2.plusAssign(other: Vector2) { add(other) }
+
+fun TextureRegion.size() = Vector2(regionWidth.toFloat(), regionHeight.toFloat())

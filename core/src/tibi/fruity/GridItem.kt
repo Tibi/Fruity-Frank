@@ -28,9 +28,10 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
             dig(gridPos, direction)
             direction = getNewDirection()
             targetGridPos = gridPos + direction
-            pos = grid2Pos(gridPos)
-        } else {
-            pos = newPos
+            newPos.set(grid2Pos(gridPos))
+        }
+        if (newPos != pos) {
+            pos = detectCollision(newPos)
         }
     }
 
@@ -60,10 +61,8 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
 
     abstract fun getNewDirection(): Direction
 
-    /** Returns true when a collision is found at the new position and item can't move to it. */
-    open fun detectCollision(newPos: Vector2): Boolean {
-        return !level.isPositionFree(newPos, this)
-    }
+    /** Override and return the new position to use after collision. */
+    open fun detectCollision(newPos: Vector2) = newPos
 
     abstract fun render(batch: SpriteBatch)
 

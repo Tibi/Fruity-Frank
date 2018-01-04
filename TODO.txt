@@ -1,5 +1,6 @@
+ - monsters get mad when colliding
  - why is frank jumping when throwing?
- - fallen apples should block monsters and balls
+ - balls cut corners!
  - frank catch ball
  - render frank without ball when no ball left
  - apples should block monsters and balls

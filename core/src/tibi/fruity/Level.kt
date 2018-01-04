@@ -114,19 +114,10 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
         apples.removeIf { it.dead }
-        handleCollisions()
     }
 
-    private fun handleCollisions() {
-        val fallingApples = apples.filter { it.isFalling() }
-        if ((monsters + fallingApples).any { it.collides(player) }) {
-            killFrank()
-            return
-        }
-        monsters.removeAll(monsters.filter { monster -> fallingApples.any { it.collides(monster) } })
-    }
-
-    private fun killFrank() {
+    fun killFrank() {
+        println("Frank dies")
     }
 
     override fun render(deltaTime: Float) {
@@ -276,7 +267,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     fun getDirectionsOnPath(p: IntPoint) : Set<Direction> {
         val res = HashSet<Direction>(4)
-        blackBlocks.forEach {block ->
+        freeBlocks().filter { it !in apples.map { it.gridPos } }.forEach {block ->
             if (block.y == p.y && block.x == p.x + 1) res.add(Direction.RIGHT)
             if (block.y == p.y && block.x == p.x - 1) res.add(Direction.LEFT)
             if (block.x == p.x && block.y == p.y + 1 &&     p in highBlackBlocks) res.add(Direction.UP)
@@ -297,13 +288,14 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     fun isOut(pos: IntPoint) = pos.x < 0 || pos.x >= GRID_WIDTH || pos.y < 0 || pos.y >= GRID_HEIGHT
 
     fun hasWall(gpos: IntPoint, wallDir: Direction) = when (wallDir) {
-        RIGHT -> gpos + RIGHT !in blackBlocks
-        LEFT  -> gpos + LEFT !in blackBlocks
+        RIGHT -> gpos + RIGHT !in freeBlocks()
+        LEFT  -> gpos + LEFT !in freeBlocks()
         UP    -> gpos !in highBlackBlocks || gpos + UP !in blackBlocks
         DOWN  -> gpos + DOWN !in highBlackBlocks
         NONE  -> false
     }
 
+    private fun freeBlocks() = blackBlocks - apples.map { it.gridPos }
 }
 
 

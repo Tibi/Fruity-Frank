@@ -16,9 +16,7 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
     var dead = false
 
     fun update(deltaTime: Float) {
-
         updateMove(deltaTime)
-      
         // Kill monsters
         level.monsters.firstOrNull { it.collides(pos, tex.size()) }?.let {
             level.monsters.remove(it)
@@ -26,15 +24,11 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
         }
     }
 
-    /** returns newPos, newSpeed */
     fun updateMove(deltaTime: Float) {
-
         movePosToCorner()
         val gpos = pos2Grid(pos)
-
         val newPos = pos + speed * deltaTime
         val newGpos = pos2Grid(newPos)
-
         if (gpos == newGpos) {
             restorePosFromCorner()
             pos.set(pos + speed * deltaTime)
@@ -118,16 +112,15 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
         else -> speed
     }
 
+    fun ballSpeed(frankDir: Direction) = when (frankDir) {
+        UP    -> Vector2(-1f,  1f)
+        DOWN  -> Vector2(-1f, -1f)
+        RIGHT -> Vector2(1f, 1f)
+        LEFT  -> Vector2(-1f, -1f)
+        NONE  -> Vector2(1f, 1f)
+    }
 
     fun render(batch: SpriteBatch) {
         batch.draw(tex, pos.x, pos.y)
-    }
-
-    fun ballSpeed(frankDir: Direction) = when (frankDir) {
-        UP -> Vector2(-1f,  1f)
-        DOWN -> Vector2(-1f, -1f)
-        RIGHT -> Vector2(1f, 1f)
-        LEFT -> Vector2(-1f, -1f)
-        NONE -> Vector2(1f, 1f)
     }
 }

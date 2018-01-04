@@ -3,6 +3,7 @@ package tibi.fruity
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Apple.AppleState.*
 
 const val FALL_HEIGHT_BEFORE_CRASH = 3  // in cells
@@ -83,6 +84,16 @@ class Apple(level: Level, pos: IntPoint)
         state = PUSHED
         move(dir)
         return true
+    }
+
+    override fun detectCollision(newPos: Vector2): Vector2 {
+        if (isFalling()) {
+            level.monsters.removeIf { collides(it) }
+            if (collides(level.player)) {
+                level.killFrank()
+            }
+        }
+        return newPos
     }
 
     override fun render(batch: SpriteBatch) {

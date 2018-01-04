@@ -40,13 +40,15 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
         return onPath.filter { it != direction.reverse() }.shuffled()[0]
     }
 
-    override fun detectCollision(newPos: Vector2): Boolean {
-        val col = super.detectCollision(newPos)
-        if (col) {
+    override fun detectCollision(newPos: Vector2): Vector2 {
+        if (level.monsters.any { it != this && it.collides(this) }) {
             direction = direction.reverse()
+            return pos
         }
-        //TODO kill player
-        return col
+        if (level.player.collides(this)) {
+            level.player.die()
+        }
+        return newPos
     }
 }
 
@@ -72,16 +74,6 @@ class Frank(level: Level, atlas: TextureAtlas)
 
     override fun dig(pos: IntPoint, direction: Direction) {
         level.dig(pos, direction)
-    }
-
-
-    //FIXME never really called
-    override fun detectCollision(newPos: Vector2): Boolean {
-        if (level.monsters.any { it.collides(this) }) {
-            die()
-            return false
-        }
-        return true
     }
 
     fun die() {

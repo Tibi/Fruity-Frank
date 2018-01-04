@@ -66,8 +66,8 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
 
     abstract fun render(batch: SpriteBatch)
 
-    fun collides(other: GridItem) = collides(other.pos, gridItemSize)
-    fun collides(otherPos: Vector2, otherSize: Vector2) =
+    fun collides(other: GridItem) = collides(other.pos)
+    fun collides(otherPos: Vector2, otherSize: Vector2 = gridItemSize) =
                pos.x in otherPos.x - gridItemSize.x + 1 .. otherPos.x + otherSize.x - 1
             && pos.y in otherPos.y - gridItemSize.y     .. otherPos.y + otherSize.y
 

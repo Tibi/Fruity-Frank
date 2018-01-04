@@ -28,12 +28,12 @@ import com.badlogic.gdx.utils.Array as GdxArray
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     val player = Frank(this, game.atlas)
-    val fruits = ArrayList<Fruit>()
-    val apples = ArrayList<Apple>()
-    val monsters = ArrayList<Perso>()
-    val balls = ArrayList<Ball>()
-    val blackBlocks = HashSet<IntPoint>()
-    val highBlackBlocks = HashSet<IntPoint>()
+    val fruits = mutableListOf<Fruit>()
+    val apples = mutableListOf<Apple>()
+    val monsters = mutableListOf<Perso>()
+    val balls = mutableListOf<Ball>()
+    val blackBlocks = mutableSetOf<IntPoint>()
+    val highBlackBlocks = mutableSetOf<IntPoint>()
 
     private val bg = game.atlas.findRegion("backgrounds/level1")
     private val header = game.atlas.findRegion("backgrounds/header")
@@ -108,12 +108,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             }
         }
         balls.forEach { it.update(dt) }
-        balls.removeIf { it.dead }
+        balls.removeAll(balls.filter { it.dead })
         player.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
-        apples.removeIf { it.dead }
+        apples.removeAll(apples.filter { it.dead })
     }
 
     fun killFrank() {
@@ -194,11 +194,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         touchpadStage.viewport.update(width, height, true)
     }
 
-    fun isPositionFree(pos: Vector2, toExclude: GridItem): Boolean {
-        //TODO used?
-        return monsters.filter { it != toExclude }.none { it.collides(pos, gridItemSize) }
-    }
-
     private fun drawBlackCross(pt: IntPoint) {
         for (x in 0 until GRID_WIDTH) {
             val block = IntPoint(x, pt.y)
@@ -218,7 +213,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         if (monsters.size > 3 + levelNo) {
             return false
         }
-        if (monsters.any { it.collides(grid2Pos(gatePos), gate.keyFrames[0].size()) }) {
+        if (monsters.any { it.collides(grid2Pos(gatePos)) }) {
             return false
         }
         val monster = if (randomBoolean()) {

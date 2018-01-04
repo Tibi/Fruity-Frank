@@ -41,8 +41,9 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
     }
 
     override fun detectCollision(newPos: Vector2): Vector2 {
-        if (level.monsters.any { it != this && it.collides(this) }) {
+        if (level.monsters.any { it != this && it.collides(newPos) }) {
             direction = direction.reverse()
+            targetGridPos += direction
             return pos
         }
         if (level.player.collides(this)) {

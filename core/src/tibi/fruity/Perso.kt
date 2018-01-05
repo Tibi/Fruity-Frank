@@ -47,7 +47,7 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
             return pos
         }
         if (level.player.collides(this)) {
-            level.player.die()
+            level.killFrank()
         }
         return newPos
     }
@@ -75,9 +75,5 @@ class Frank(level: Level, atlas: TextureAtlas)
 
     override fun dig(pos: IntPoint, direction: Direction) {
         level.dig(pos, direction)
-    }
-
-    fun die() {
-        println("DEAD")
     }
 }

@@ -1,5 +1,3 @@
- - monsters get mad when colliding
- - why is frank jumping when throwing?
  - balls cut corners!
  - frank catch ball
  - render frank without ball when no ball left

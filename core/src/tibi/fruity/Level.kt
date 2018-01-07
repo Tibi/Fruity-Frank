@@ -249,8 +249,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         if (!player.hasBall) {
             return
         }
-        val ballPos = Vector2(player.pos).add(0f, CELL_HEIGHT / 2f)
-        balls.add(Ball(this, game.atlas, ballPos, player.lastDir))
+        balls.add(Ball(this, game.atlas, player.pos, player.lastDir))
     }
 
     fun dig(pos: IntPoint, dir: Direction) {

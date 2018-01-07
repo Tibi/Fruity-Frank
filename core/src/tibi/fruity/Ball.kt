@@ -8,12 +8,29 @@ import tibi.fruity.Direction.*
 import kotlin.math.abs
 
 /** The ball frank throws. */
-class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Direction) {
+class Ball(val level: Level, atlas: TextureAtlas, frankPos: Vector2, frankDir: Direction) {
 
-    val speed = ballSpeed(frankDir) * level.speed
     val tex = atlas.findRegion("frank/ball")
     val size = Vector2(tex.originalWidth.toFloat(), tex.originalHeight.toFloat())
+    val pos = startPos(frankPos, frankDir)
+    val speed = startSpeed(frankDir) * level.speed
     var dead = false
+
+    private fun startPos(frankPos: Vector2, frankDir: Direction): Vector2 {
+        val res = Vector2(frankPos)
+        res.y += CELL_HEIGHT / 2
+        if (frankDir == RIGHT)
+            res.x += CELL_WIDTH - size.x - 1
+        return res
+    }
+
+    fun startSpeed(frankDir: Direction) = when (frankDir) {
+        UP    -> Vector2(-1f,  1f)
+        DOWN  -> Vector2(-1f, -1f)
+        RIGHT -> Vector2(1f, -1f)
+        LEFT  -> Vector2(-1f, -1f)
+        NONE  -> Vector2(1f, 1f)
+    } * 2f
 
     fun update(deltaTime: Float) {
         updateMove(deltaTime)
@@ -110,14 +127,6 @@ class Ball(val level: Level, atlas: TextureAtlas, val pos: Vector2, frankDir: Di
         RIGHT, LEFT -> Vector2(-speed.x, speed.y)
         UP, DOWN -> Vector2(speed.x, -speed.y)
         else -> speed
-    }
-
-    fun ballSpeed(frankDir: Direction) = when (frankDir) {
-        UP    -> Vector2(-1f,  1f)
-        DOWN  -> Vector2(-1f, -1f)
-        RIGHT -> Vector2(1f, 1f)
-        LEFT  -> Vector2(-1f, -1f)
-        NONE  -> Vector2(1f, 1f)
     }
 
     fun render(batch: SpriteBatch) {

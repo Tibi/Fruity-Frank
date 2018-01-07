@@ -1,7 +1,6 @@
- - balls cut corners!
- - apples should block monsters and balls
  - frank catch ball
  - render frank without ball when no ball left
+ - gate eats ball
  - make touchpad usable and pretty
  - halve all images, scaling will restore pixelisation
  - let monsters dig

@@ -79,6 +79,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
                 point = randPoints[pointIndex++]
             } while (point.y == gatePos.y + 1)  // Don't put apples on the row above the gate
             apples.add(Apple(this, point))
+            blackBlocks.add(point)
         }
         if (isAndroid) {
             touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))

@@ -287,11 +287,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         RIGHT -> gpos + RIGHT !in freeBlocks()
         LEFT  -> gpos + LEFT !in freeBlocks()
         UP    -> gpos !in highBlackBlocks || gpos + UP !in blackBlocks
-        DOWN  -> gpos + DOWN !in highBlackBlocks
+        DOWN  -> gpos + DOWN !in freeHighBlocks()
         NONE  -> false
     }
 
     private fun freeBlocks() = blackBlocks - apples.map { it.gridPos }
+    private fun freeHighBlocks() = highBlackBlocks - apples.map { it.gridPos }
 }
 
 

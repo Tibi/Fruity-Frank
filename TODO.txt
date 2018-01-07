@@ -1,14 +1,15 @@
  - balls cut corners!
+ - apples should block monsters and balls
  - frank catch ball
  - render frank without ball when no ball left
- - apples should block monsters and balls
  - make touchpad usable and pretty
- - throw ball
  - halve all images, scaling will restore pixelisation
  - let monsters dig
  - let monsters go for Frank
  - falling prune
  - 3 lives then game over
+ - 3 balls mode: one for each remaining life
+ - machine gun mode
  - bitmap font for score
  - other screens: intro, high scores, etc..
  - color rotation: tinted sprite for black path on win

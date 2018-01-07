@@ -10,7 +10,6 @@ import com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.MathUtils.*
-import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
@@ -27,7 +26,7 @@ import com.badlogic.gdx.utils.Array as GdxArray
 
 class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
-    val player = Frank(this, game.atlas)
+    val frank = Frank(this, game.atlas)
     val fruits = mutableListOf<Fruit>()
     val apples = mutableListOf<Apple>()
     val monsters = mutableListOf<Perso>()
@@ -62,7 +61,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         drawBlackCross(gatePos)
-        player.putAt(gatePos.copy(y = 0))
+        frank.putAt(gatePos.copy(y = 0))
 
         val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
             game.atlas.findRegion("fruits/" + it)
@@ -110,7 +109,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
         balls.forEach { it.update(dt) }
         balls.removeAll(balls.filter { it.dead })
-        player.update(deltaTime)
+        frank.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
@@ -147,7 +146,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         monsters.forEach { it.render(game.batch) }
         fruits.forEach { it.render(game.batch) }
         apples.forEach { it.render(game.batch) }
-        player.render(game.batch)
+        frank.render(game.batch)
 
         balls.forEach { it.render(game.batch) }
 
@@ -229,7 +228,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     class FruityInput(private val level: Level) : InputAdapter() {
         override fun keyDown(keycode: Int): Boolean {
-            if (keycode == Keys.RIGHT_BRACKET || keycode == Keys.SPACE) level.throwBall()
+            if (keycode == Keys.RIGHT_BRACKET || keycode == Keys.SPACE) level.frank.throwBall()
             else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
             return true
         }
@@ -245,11 +244,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    fun throwBall() {
-        if (!player.hasBall) {
-            return
-        }
-        balls.add(Ball(this, game.atlas, player.pos, player.lastDir))
+    fun addBall(ball: Ball) {
+        balls.add(ball)
     }
 
     fun dig(pos: IntPoint, dir: Direction) {

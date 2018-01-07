@@ -3,6 +3,7 @@ package tibi.fruity
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.utils.Timer
 import tibi.fruity.Direction.*
 
 
@@ -56,3 +57,12 @@ operator fun Vector2.plus(other: Vector2) = Vector2(x + other.x, y + other.y)
 operator fun Vector2.plusAssign(other: Vector2) { add(other) }
 
 fun TextureRegion.size() = Vector2(regionWidth.toFloat(), regionHeight.toFloat())
+
+// from KTX.async
+inline fun schedule(
+        delaySeconds: Float,
+        crossinline task: () -> Unit) = Timer.schedule(object : Timer.Task() {
+    override fun run() {
+        task()
+    }
+}, delaySeconds)!!

@@ -2,15 +2,15 @@ package tibi.fruity
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.*
 import kotlin.math.abs
 
 /** The ball frank throws. */
-class Ball(val level: Level, atlas: TextureAtlas, frankPos: Vector2, frankDir: Direction) {
+class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: Direction) {
 
-    val tex = atlas.findRegion("frank/ball")
     val size = Vector2(tex.originalWidth.toFloat(), tex.originalHeight.toFloat())
     val pos = startPos(frankPos, frankDir)
     val speed = startSpeed(frankDir) * level.speed

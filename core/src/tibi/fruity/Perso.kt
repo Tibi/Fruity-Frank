@@ -2,30 +2,27 @@ package tibi.fruity
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
-import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.NONE
 
 
 /** An animated GridItem. */
-abstract class Perso(level: Level, val anims: AnimationMap, pos: IntPoint, speedFactor: Float)
+abstract class Perso(level: Level, var anims: AnimationMap, pos: IntPoint, speedFactor: Float)
     : GridItem(level, pos, speedFactor) {
 
-    var lastFrame: AtlasRegion? = anims[Direction.RIGHT]?.getKeyFrame(0f)
     var stateTime: Float = 0f
 
     override fun update(deltaTime: Float) {
-        stateTime += deltaTime
+        if (direction != NONE) stateTime += deltaTime
         super.update(deltaTime)
     }
 
     override fun render(batch: SpriteBatch) {
         renderDigging(batch)
-        val anim = anims[direction]
+        val anim = anims[if (direction == NONE) lastDir else direction]
         if (anim != null) {
-            lastFrame = anim.getKeyFrame(stateTime)
+            batch.draw(anim.getKeyFrame(stateTime), pos.x, pos.y)
         }
-        batch.draw(lastFrame, pos.x, pos.y)
     }
 }
 
@@ -46,7 +43,7 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
             targetGridPos += direction
             return pos
         }
-        if (level.player.collides(this)) {
+        if (level.frank.collides(this)) {
             level.killFrank()
         }
         return newPos
@@ -58,7 +55,15 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
 class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
 
-    var hasBall = true
+    var numBalls = 1
+        set(value) {
+            anims = if (value > 0) ballAnims else noBallAnims
+            field = value
+        }
+    val ballAnims = anims
+    val noBallAnims = createAnimations(atlas, "frank/")
+    val ballTex = atlas.findRegion("frank/ball")
+
 
     override fun getNewDirection(): Direction {
         val dir = level.getInputDirection()
@@ -76,4 +81,14 @@ class Frank(level: Level, atlas: TextureAtlas)
     override fun dig(pos: IntPoint, direction: Direction) {
         level.dig(pos, direction)
     }
+
+    fun throwBall() {
+        if (numBalls == 0) {
+            return
+        }
+        numBalls--
+        level.addBall(Ball(level, ballTex, pos, lastDir))
+        schedule(3f) { numBalls++ }
+    }
+
 }

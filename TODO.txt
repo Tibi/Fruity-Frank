@@ -1,6 +1,6 @@
  - frank catch ball
- - render frank without ball when no ball left
  - gate eats ball
+ - switch to Java 6?
  - make touchpad usable and pretty
  - halve all images, scaling will restore pixelisation
  - let monsters dig

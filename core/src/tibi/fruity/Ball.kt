@@ -1,7 +1,6 @@
 package tibi.fruity
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
-import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.math.Intersector
 import com.badlogic.gdx.math.Vector2
@@ -19,8 +18,13 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
     private fun startPos(frankPos: Vector2, frankDir: Direction): Vector2 {
         val res = Vector2(frankPos)
         res.y += CELL_HEIGHT / 2
-        if (frankDir == RIGHT)
-            res.x += CELL_WIDTH - size.x - 1
+        when (frankDir) {
+            RIGHT -> res.x += CELL_WIDTH + 1
+            LEFT  -> res.x -= size.x
+            UP    -> res.y += CELL_HEIGHT + 1
+            DOWN  -> res.y -= size.y
+            else  -> {}
+        }
         return res
     }
 
@@ -34,11 +38,7 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
 
     fun update(deltaTime: Float) {
         updateMove(deltaTime)
-        // Kill monsters
-        level.monsters.firstOrNull { it.collides(pos, tex.size()) }?.let {
-            level.monsters.remove(it)
-            dead = true
-        }
+        detectCollisions()
     }
 
     fun updateMove(deltaTime: Float) {
@@ -127,6 +127,19 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
         RIGHT, LEFT -> Vector2(-speed.x, speed.y)
         UP, DOWN -> Vector2(speed.x, -speed.y)
         else -> speed
+    }
+
+    private fun detectCollisions() {
+        // Kill monsters
+        level.monsters.firstOrNull { it.collides(pos, size) }?.let {
+            level.monsters.remove(it)
+            dead = true
+        }
+        // Let Frank catch the ball
+        if (level.frank.collides(pos, size)) {
+            level.frank.catchBall()
+            dead = true
+        }
     }
 
     fun render(batch: SpriteBatch) {

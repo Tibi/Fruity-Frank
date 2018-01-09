@@ -117,7 +117,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun killFrank() {
-        println("Frank dies")
     }
 
     override fun render(deltaTime: Float) {

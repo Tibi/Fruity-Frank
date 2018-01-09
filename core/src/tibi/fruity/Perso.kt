@@ -3,6 +3,7 @@ package tibi.fruity
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.math.Vector2
+import com.badlogic.gdx.utils.Timer
 import tibi.fruity.Direction.NONE
 
 
@@ -55,7 +56,7 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
 class Frank(level: Level, atlas: TextureAtlas)
     : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
 
-    var numBalls = 1
+    var numBalls = NUM_BALLS
         set(value) {
             anims = if (value > 0) ballAnims else noBallAnims
             field = value
@@ -63,6 +64,7 @@ class Frank(level: Level, atlas: TextureAtlas)
     val ballAnims = anims
     val noBallAnims = createAnimations(atlas, "frank/")
     val ballTex = atlas.findRegion("frank/ball")
+    var catchBallTask: Timer.Task? = null
 
 
     override fun getNewDirection(): Direction {
@@ -88,7 +90,14 @@ class Frank(level: Level, atlas: TextureAtlas)
         }
         numBalls--
         level.addBall(Ball(level, ballTex, pos, lastDir))
-        schedule(3f) { numBalls++ }
+        catchBallTask = schedule(3f) { catchBall() }
+        println(numBalls)
+    }
+
+    fun catchBall() {
+        if (numBalls < NUM_BALLS) numBalls++
+        catchBallTask?.cancel()
+        println(numBalls)
     }
 
 }

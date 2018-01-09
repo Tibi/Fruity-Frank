@@ -41,7 +41,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
-    private val gatePos = IntPoint(2,2)//IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
+    val gatePos = IntPoint(2,2)//IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
 
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f

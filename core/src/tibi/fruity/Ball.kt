@@ -126,16 +126,24 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
 
     private fun detectCollisions() {
         // Kill monsters
-        level.monsters.firstOrNull { it.collides(pos, size) }?.let {
+        level.monsters.firstOrNull { collides(it) }?.let {
             level.monsters.remove(it)
             dead = true
         }
         // Let Frank catch the ball
-        if (level.frank.collides(pos, size)) {
+        if (collides(level.frank)) {
             level.frank.catchBall()
             dead = true
         }
+        // Gate catches the ball
+        if (collides(level.gatePos)) {
+            dead = true
+        }
     }
+
+    private fun collides(gridPos: IntPoint) = collides(pos, size, grid2Pos(gridPos), gridItemSize)
+
+    private fun collides(item: GridItem) = item.collides(pos, size)
 
     fun render(batch: SpriteBatch) {
         batch.draw(tex, pos.x, pos.y)

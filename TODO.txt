@@ -1,5 +1,4 @@
  - gate eats ball
- - anim when ball returns
  - switch to Java 6?
  - make touchpad usable and pretty
  - halve all images, scaling will restore pixelisation

@@ -7,8 +7,10 @@ import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
 import com.badlogic.gdx.graphics.g2d.Animation.PlayMode.LOOP
+import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
+import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.math.MathUtils.*
 import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -16,6 +18,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
 import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
+import com.badlogic.gdx.utils.Timer
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
@@ -42,6 +45,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     private val gatePos = IntPoint(2,2)//IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
+    val redSquareTex = game.atlas.findRegion("frank/red_square")
+    var ballRegainAnim: BallRegainAnim? = null
 
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f
@@ -107,8 +112,15 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
                 monsterSpawnStateTime = 0f
             }
         }
+        if (ballRegainAnim?.update(deltaTime) == false) {
+            ballRegainAnim = null
+            frank.regainBalls()
+        }
         balls.forEach { it.update(dt) }
         balls.removeAll(balls.filter { it.dead })
+        if (balls.isEmpty() && frank.numBalls == 0 && ballRegainAnim == null) {
+            ballRegainAnim = BallRegainAnim(frank, redSquareTex)
+        }
         frank.update(deltaTime)
         monsters.forEach { it.update(deltaTime) }
         fruits.forEach { it.update(deltaTime) }
@@ -124,32 +136,34 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         update(deltaTime)
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
-        game.batch.projectionMatrix = cam.combined
-        game.batch.begin()
-        game.batch.disableBlending()
+        val batch = game.batch
+        batch.projectionMatrix = cam.combined
+        batch.begin()
+        batch.disableBlending()
 
         // Header
-        game.batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
+        batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
         // Background
-        TiledDrawable(bg).draw(game.batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+        TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
             val gridPos = grid2Pos(blackBlock)
-            game.batch.draw(tex, gridPos.x, gridPos.y)
+            batch.draw(tex, gridPos.x, gridPos.y)
         }
         // Monster gate
         val gridPos = grid2Pos(gatePos)
-        game.batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)
+        batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)
 
-        monsters.forEach { it.render(game.batch) }
-        fruits.forEach { it.render(game.batch) }
-        apples.forEach { it.render(game.batch) }
-        frank.render(game.batch)
+        monsters.forEach { it.render(batch) }
+        fruits.forEach { it.render(batch) }
+        apples.forEach { it.render(batch) }
+        frank.render(batch)
 
-        balls.forEach { it.render(game.batch) }
+        balls.forEach { it.render(batch) }
+        ballRegainAnim?.render(batch)
 
-        game.batch.end()
+        batch.end()
 
         if (isAndroid) touchpadStage.draw()
 
@@ -301,4 +315,24 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
             Direction.LEFT to Animation(0.15F, leftRegions, LOOP),
             Direction.UP to Animation(0.15F, downRegions, LOOP),
             Direction.DOWN to Animation(0.15F, downRegions, LOOP))
+}
+
+
+class BallRegainAnim(val frank: Frank, val tex: TextureRegion) {
+
+    var ballRegainDist = SCREEN_WIDTH   // so it waits before starting
+
+    fun update(deltaTime: Float): Boolean {
+        ballRegainDist -= deltaTime * 200
+        return ballRegainDist > 0
+    }
+
+    fun render(batch: SpriteBatch) {
+        val targetX = frank.pos.x + CELL_WIDTH / 2
+        val targetY = frank.pos.y + CELL_HEIGHT / 2
+        batch.draw(tex, targetX + ballRegainDist, targetY + ballRegainDist)
+        batch.draw(tex, targetX + ballRegainDist, targetY - ballRegainDist)
+        batch.draw(tex, targetX - ballRegainDist, targetY + ballRegainDist)
+        batch.draw(tex, targetX - ballRegainDist, targetY - ballRegainDist)
+    }
 }

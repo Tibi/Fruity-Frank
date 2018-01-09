@@ -85,11 +85,9 @@ class Frank(level: Level, atlas: TextureAtlas)
     }
 
     fun throwBall() {
-        if (numBalls == 0) {
-            return
-        }
+        if (numBalls == 0) return
+        if (!level.addBall(Ball(level, ballTex, pos, lastDir))) return
         numBalls--
-        level.addBall(Ball(level, ballTex, pos, lastDir))
         catchBallTask = schedule(3f) { catchBall() }
         println(numBalls)
     }

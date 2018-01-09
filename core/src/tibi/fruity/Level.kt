@@ -194,10 +194,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     private fun drawBlackCross(pt: IntPoint) {
-        for (x in 0 until GRID_WIDTH) {
-            val block = IntPoint(x, pt.y)
-            blackBlocks.add(block)
-        }
+        blackBlocks.addAll((0 until GRID_WIDTH).map { IntPoint(it, pt.y) })
         for (y in 0 until GRID_HEIGHT) {
             val block = IntPoint(pt.x, y)
             blackBlocks.add(block)
@@ -243,9 +240,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    fun addBall(ball: Ball) {
-        balls.add(ball)
-    }
+    fun addBall(ball: Ball) =
+        if (pos2Grid(ball.pos) in freeBlocks()) {
+            balls.add(ball)
+            true
+        } else false
 
     fun dig(pos: IntPoint, dir: Direction) {
         blackBlocks.add(pos)

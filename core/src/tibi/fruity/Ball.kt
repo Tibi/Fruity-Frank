@@ -15,17 +15,12 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
     val speed = startSpeed(frankDir) * level.speed
     var dead = false
 
-    private fun startPos(frankPos: Vector2, frankDir: Direction): Vector2 {
-        val res = Vector2(frankPos)
-        res.y += CELL_HEIGHT / 2
-        when (frankDir) {
-            RIGHT -> res.x += CELL_WIDTH + 1
-            LEFT  -> res.x -= size.x
-            UP    -> res.y += CELL_HEIGHT + 1
-            DOWN  -> res.y -= size.y
-            else  -> {}
-        }
-        return res
+    private fun startPos(frankPos: Vector2, frankDir: Direction) = when (frankDir) {
+        RIGHT -> Vector2(frankPos.x + CELL_WIDTH + 1, frankPos.y + CELL_HEIGHT / 2)
+        LEFT  -> Vector2(frankPos.x - size.x, frankPos.y + CELL_HEIGHT / 2)
+        UP    -> Vector2(frankPos.x + CELL_WIDTH / 2, frankPos.y + CELL_HEIGHT + 1)
+        DOWN  -> Vector2(frankPos.x + CELL_WIDTH / 2, frankPos.y - size.y)
+        else  -> Vector2()
     }
 
     fun startSpeed(frankDir: Direction) = when (frankDir) {

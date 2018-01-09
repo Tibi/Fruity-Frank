@@ -1,4 +1,3 @@
- - prevent throwing balls inside fruits
  - gate eats ball
  - anim when ball returns
  - switch to Java 6?

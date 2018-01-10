@@ -11,18 +11,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.MathUtils.*
-import com.badlogic.gdx.math.Vector3
-import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.Touchpad
-import com.badlogic.gdx.scenes.scene2d.ui.Touchpad.TouchpadStyle
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
-import com.sun.deploy.uitoolkit.ToolkitStore.dispose
 import tibi.fruity.Direction.*
-import kotlin.math.abs
-import kotlin.math.max
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
@@ -53,15 +46,11 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     var speed = 100f
     private var score: Int = 0
 
-    private val touchpadStage = Stage(FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT))
-    val cam = touchpadStage.viewport.camera as OrthographicCamera
-    private val touchpadStyle = TouchpadStyle()
-    private val touchpad = Touchpad(10f, touchpadStyle)
-
-    private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
+    private val viewport = FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
+    val gestureListener = FrankGestureListener(this)
 
     init {
-        cam.setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
+        (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         drawBlackCross(gatePos)
@@ -84,11 +73,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             apples.add(Apple(this, point))
             blackBlocks.add(point)
         }
-        if (isAndroid) {
-            touchpad.setBounds(15f, 15f, 100f, 100f)
-            touchpadStage.addActor(touchpad)
-        }
-        Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), touchpadStage)
+        Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), GestureDetector(gestureListener))
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {
@@ -123,18 +108,21 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
         apples.removeAll(apples.filter { it.dead })
+
+        if (fruits.isEmpty()) {
+            println("WINNER!!")
+        }
     }
 
     fun killFrank() {
     }
 
     override fun render(deltaTime: Float) {
-        if (isAndroid) touchpadStage.act(deltaTime)
         update(deltaTime)
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         val batch = game.batch
-        batch.projectionMatrix = cam.combined
+        batch.projectionMatrix = viewport.camera.combined
         batch.begin()
         batch.disableBlending()
 
@@ -161,61 +149,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         ballRegainAnim?.render(batch)
 
         batch.end()
-
-        if (isAndroid) touchpadStage.draw()
-
-        if (fruits.isEmpty()) {
-            println("WINNER!!")
-        }
     }
-
-
-    class FruityInput(private val level: Level) : InputAdapter() {
-        override fun keyDown(keycode: Int): Boolean {
-            if (keycode == Keys.RIGHT_BRACKET || keycode == Keys.SPACE) level.frank.throwBall()
-            else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
-            return true
-        }
-
-        /** Moves the touchpad when screen touched. */
-        override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-            if (button != Input.Buttons.LEFT || pointer > 0) {
-                level.frank.throwBall()
-            } else {
-                level.moveTouchpad(screenX, screenY)
-            }
-            return false // to let the touchpad process the touch
-        }
-
-    }
-
-    private fun moveTouchpad(screenX: Int, screenY: Int) {
-        val vector3 = Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
-        cam.unproject(vector3)
-        touchpad.x = max(vector3.x - touchpad.width / 2, 0f)
-        touchpad.y = max(vector3.y - touchpad.height / 2, 0f)
-    }
-
-    private var lastTouchpadDir = NONE
 
     fun getInputDirection(): Direction {
         if (Gdx.input.isTouched) {
-            val tx = touchpad.knobPercentX
-            val ty = touchpad.knobPercentY
-            if (abs(tx) + abs(ty) > .3) {
-                lastTouchpadDir = when (atan2(ty, tx) * radiansToDegrees) {
-                    in -45..45 -> RIGHT
-                    in 45..135 -> UP
-                    in 135..180 -> LEFT
-                    in -180..-135 -> LEFT
-                    in -135..-45 -> DOWN
-                    else -> NONE  // never happens
-                }
-                moveTouchpad(Gdx.input.x, Gdx.input.y)
-            }
-            return lastTouchpadDir
+            return gestureListener.lastDir
         }
-        lastTouchpadDir = NONE
         return when {
             isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)       -> RIGHT
             isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)        -> LEFT
@@ -227,15 +166,18 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     private fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
 
+    fun restart() {
+        dispose()
+        game.screen = Level(levelNo, game)
+    }
+
     override fun show() {}
     override fun hide() {}
     override fun pause() {}
     override fun resume() {}
-    override fun dispose() {
-        touchpadStage.dispose()
-    }
+    override fun dispose() {}
     override fun resize(width: Int, height: Int) {
-        touchpadStage.viewport.update(width, height, true)
+        viewport.update(width, height, true)
     }
 
     private fun drawBlackCross(pt: IntPoint) {

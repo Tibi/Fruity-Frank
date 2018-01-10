@@ -1,8 +1,16 @@
- - switch to Java 6?
- - make touchpad usable and pretty
+ - better controls
+    - move frank toward touched pos?
+    - relative touchpad:
+      - touch, move right, up, right, without going back to center.
+      - untouch to stop
+      - tap to throw ball
+ - fix throw ball through narrow ground bit
+ - apple slow fall should be slower => not to kill Frank when eating fruit below
+ - slowest speedFactor should be slower
+ - squares anim when frank (8 squares) or monster dies (4 squares)
  - halve all images, scaling will restore pixelisation
  - let monsters dig
- - let monsters go for Frank
+ - let monsters go for Frank?
  - falling prune
  - 3 lives then game over
  - 3 balls mode: one for each remaining life

@@ -43,7 +43,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
-    private val gatePos = IntPoint(2,2)//IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
+    val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
     val redSquareTex = game.atlas.findRegion("frank/red_square")
     var ballRegainAnim: BallRegainAnim? = null
 
@@ -85,8 +85,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             blackBlocks.add(point)
         }
         if (isAndroid) {
-            touchpadStyle.background = TextureRegionDrawable(game.atlas.findRegion("UI/touchBackground"))
-            touchpadStyle.knob = TextureRegionDrawable(game.atlas.findRegion("UI/touchKnob"))
             touchpad.setBounds(15f, 15f, 100f, 100f)
             touchpadStage.addActor(touchpad)
         }
@@ -171,24 +169,58 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    fun getInputDirection(): Direction {
-        val tx = touchpad.knobPercentX
-        val ty = touchpad.knobPercentY
-        if (abs(tx) + abs(ty) > .1) {
-            return when (atan2(ty, tx) * radiansToDegrees) {
-                in  -45..  45 -> RIGHT
-                in   45.. 135 -> UP
-                in  135.. 180 -> LEFT
-                in -180..-135 -> LEFT
-                in -135..- 45 -> DOWN
-                else -> NONE  // never happens
-            }
+
+    class FruityInput(private val level: Level) : InputAdapter() {
+        override fun keyDown(keycode: Int): Boolean {
+            if (keycode == Keys.RIGHT_BRACKET || keycode == Keys.SPACE) level.frank.throwBall()
+            else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
+            return true
         }
+
+        /** Moves the touchpad when screen touched. */
+        override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
+            if (button != Input.Buttons.LEFT || pointer > 0) {
+                level.frank.throwBall()
+            } else {
+                level.moveTouchpad(screenX, screenY)
+            }
+            return false // to let the touchpad process the touch
+        }
+
+    }
+
+    private fun moveTouchpad(screenX: Int, screenY: Int) {
+        val vector3 = Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
+        cam.unproject(vector3)
+        touchpad.x = max(vector3.x - touchpad.width / 2, 0f)
+        touchpad.y = max(vector3.y - touchpad.height / 2, 0f)
+    }
+
+    private var lastTouchpadDir = NONE
+
+    fun getInputDirection(): Direction {
+        if (Gdx.input.isTouched) {
+            val tx = touchpad.knobPercentX
+            val ty = touchpad.knobPercentY
+            if (abs(tx) + abs(ty) > .3) {
+                lastTouchpadDir = when (atan2(ty, tx) * radiansToDegrees) {
+                    in -45..45 -> RIGHT
+                    in 45..135 -> UP
+                    in 135..180 -> LEFT
+                    in -180..-135 -> LEFT
+                    in -135..-45 -> DOWN
+                    else -> NONE  // never happens
+                }
+                moveTouchpad(Gdx.input.x, Gdx.input.y)
+            }
+            return lastTouchpadDir
+        }
+        lastTouchpadDir = NONE
         return when {
-            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)      ||  tx >  .1 -> RIGHT
-            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)       ||  tx < -.1 -> LEFT
-            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP) ||  ty >  .1 -> UP
-            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)  ||  ty < -.1 -> DOWN
+            isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)       -> RIGHT
+            isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)        -> LEFT
+            isKeyPressed(Keys.SEMICOLON, Keys.W, Keys.UP)  -> UP
+            isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)   -> DOWN
             else -> NONE
         }
     }
@@ -233,24 +265,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         monsters.add(monster)
         monster.move(Direction.values()[random(1, 4)])
         return true
-    }
-
-    class FruityInput(private val level: Level) : InputAdapter() {
-        override fun keyDown(keycode: Int): Boolean {
-            if (keycode == Keys.RIGHT_BRACKET || keycode == Keys.SPACE) level.frank.throwBall()
-            else if (keycode == Keys.ESCAPE) { dispose(); level.game.screen = Level(level.levelNo, level.game) }
-            return true
-        }
-
-        /** Moves the touchpad when screen touched. */
-        override fun touchDown(screenX: Int, screenY: Int, pointer: Int, button: Int): Boolean {
-            if (button != Input.Buttons.LEFT || pointer > 0) return false
-            val vector3 = Vector3(screenX.toFloat(), screenY.toFloat(), 0f)
-            level.cam.unproject(vector3)
-            level.touchpad.x = max(vector3.x - level.touchpad.width / 2, 0f)
-            level.touchpad.y = max(vector3.y - level.touchpad.height / 2, 0f)
-            return false // to let the touchpad process the touch
-        }
     }
 
     fun addBall(ball: Ball) =

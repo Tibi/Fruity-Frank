@@ -1,7 +1,9 @@
 package tibi.fruity
 
-import com.badlogic.gdx.*
+import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
+import com.badlogic.gdx.InputMultiplexer
+import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -13,9 +15,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.MathUtils.*
+import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import tibi.fruity.Direction.*
+import kotlin.math.abs
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
@@ -153,7 +157,17 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
     fun getInputDirection(): Direction {
         if (Gdx.input.isTouched) {
-            return gestureListener.lastDir
+            val touchPos = Vector3(Gdx.input.x.toFloat() , Gdx.input.y.toFloat(), 0f)
+            viewport.camera.unproject(touchPos)
+
+            val dx = touchPos.x - (frank.pos.x + CELL_WIDTH / 2)
+            val dy = touchPos.y - (frank.pos.y + CELL_HEIGHT / 2)
+            if (abs(dx) > CELL_WIDTH / 2 || abs(dy) > CELL_HEIGHT / 2) {
+                if (abs(dx) > abs(dy)) {
+                    return if (dx > 0) RIGHT else LEFT
+                }
+                return if (dy > 0) UP else DOWN
+            }
         }
         return when {
             isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)       -> RIGHT

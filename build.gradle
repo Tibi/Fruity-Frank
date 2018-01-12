@@ -1,3 +1,5 @@
+import com.badlogic.gdx.tools.texturepacker.TexturePacker
+
 buildscript {
     ext {
         appName = "Fruity Frank"
@@ -17,19 +19,6 @@ buildscript {
     }
 }
 
-// Store the parameters you want to pass the texturePacker here...
-project.ext.texturePacker = [ "assets source/sprites", "android/assets/", "main" ]
-
-// Import the texture packer
-import com.badlogic.gdx.tools.texturepacker.TexturePacker
-
-// Packs the textures to the atlas
-task texturePacker << {
-  if (project.ext.has('texturePacker')) {
-    logger.info "Calling TexturePacker: "+texturePacker
-    TexturePacker.process(texturePacker[0], texturePacker[1], texturePacker[2])
-  }
-}
 
 allprojects {
     apply plugin: "eclipse"
@@ -70,6 +59,7 @@ project(":android") {
     }
 }
 
+
 project(":core") {
     apply plugin: "java"
     apply plugin: "kotlin"
@@ -77,4 +67,17 @@ project(":core") {
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
     }
+
+
+    // Store the parameters you want to pass the texturePacker here...
+    project.ext.texturePacker = [ "assets source/sprites", "android/assets/", "main" ]
+
+    // Packs the textures to the atlas
+    task texturePacker doLast {
+        if (project.ext.has('texturePacker')) {
+            logger.info "Calling TexturePacker: "+texturePacker
+            TexturePacker.process(texturePacker[0], texturePacker[1], texturePacker[2])
+        }
+    }
+
 }

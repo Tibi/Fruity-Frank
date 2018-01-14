@@ -15,11 +15,9 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.MathUtils.*
-import com.badlogic.gdx.math.Vector3
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
-import com.badlogic.gdx.utils.viewport.FitViewport
+import com.badlogic.gdx.utils.viewport.StretchViewport
 import tibi.fruity.Direction.*
-import kotlin.math.abs
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
@@ -41,7 +39,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
-    val redSquareTex = game.atlas.findRegion("frank/red_square")
+    val redSquareTex: AtlasRegion = game.atlas.findRegion("frank/red_square")
     var ballRegainAnim: BallRegainAnim? = null
 
     private var stateTime: Float = 0f
@@ -50,12 +48,16 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     var speed = 80f
     private var score: Int = 0
 
-    private val viewport = FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
-    val gestureListener = FrankGestureListener(this)
+    private val viewport = StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)// FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
+    val ui = FrankUI(viewport)
     val input = FruityInput(this)
+    val gestureListener = FrankGestureListener(this)
 
     init {
         (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
+        viewport.camera.position.x -= 200f
+        viewport.camera.update()
+
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
         drawBlackCross(gatePos)
@@ -78,7 +80,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             apples.add(Apple(this, point))
             blackBlocks.add(point)
         }
-        Gdx.input.inputProcessor = InputMultiplexer(input, GestureDetector(gestureListener))
+        Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {
@@ -122,6 +124,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     override fun render(deltaTime: Float) {
+        ui.act(deltaTime)
         update(deltaTime)
 
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
@@ -133,7 +136,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         // Header
         batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
         // Background
-        TiledDrawable(bg).draw(batch, 0F, 0F, SCREEN_WIDTH, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+        TiledDrawable(bg).draw(batch, 0F, 0F, GAME_WIDTH, GAME_HEIGHT - HEADER_HEIGHT - 1)
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
@@ -153,18 +156,16 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         ballRegainAnim?.render(batch)
 
         batch.end()
+
+        ui.draw()
     }
 
     fun getInputDirection(): Direction {
-        if (input.isTouched) {
-            val touchPos = input.touchPos
-            viewport.camera.unproject(touchPos)
-            return if (touchPos.x < SCREEN_WIDTH / 2) {
-                if (touchPos.x < SCREEN_WIDTH / 4) LEFT else RIGHT
-            } else {
-                if (touchPos.y > SCREEN_HEIGHT / 2) UP else DOWN
-            }
-        }
+        if (ui.leftBt.isPressed) return LEFT
+        if (ui.rightBt.isPressed) return RIGHT
+        if (ui.upBt.isPressed) return UP
+        if (ui.downBt.isPressed) return DOWN
+
         fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
         return when {
             isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)       -> RIGHT
@@ -187,7 +188,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     override fun resume() {}
     override fun dispose() {}
     override fun resize(width: Int, height: Int) {
-        viewport.update(width, height, true)
+        viewport.update(width, height, false)
+        ui.viewport.update(width, height)
     }
 
     private fun drawBlackCross(pt: IntPoint) {
@@ -287,7 +289,7 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
 
 class BallRegainAnim(val frank: Frank, val tex: TextureRegion) {
 
-    var ballRegainDist = SCREEN_WIDTH   // so it waits before starting
+    var ballRegainDist = GAME_WIDTH   // so it waits before starting
 
     fun update(deltaTime: Float): Boolean {
         ballRegainDist -= deltaTime * 200

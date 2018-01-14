@@ -6,15 +6,18 @@ import com.badlogic.gdx.utils.Timer
 import tibi.fruity.Direction.*
 
 
-const val SCREEN_WIDTH = 649F
-const val SCREEN_HEIGHT = 378F
-const val HEADER_HEIGHT = 28F
+const val GAME_WIDTH = 649f
+const val GAME_HEIGHT = 378f
+const val SCREEN_WIDTH = GAME_WIDTH + 300f
+const val SCREEN_HEIGHT = GAME_HEIGHT
 
-const val GRID_START_X = 17F
-const val GRID_START_Y = 7F
+const val HEADER_HEIGHT = 28f
 
-const val CELL_WIDTH = 41F
-const val CELL_HEIGHT = 34F
+const val GRID_START_X = 17f
+const val GRID_START_Y = 7f
+
+const val CELL_WIDTH = 41f
+const val CELL_HEIGHT = 34f
 /**  How much smaller low cells are */
 const val LOW_CELL_CEILING = 3f
 

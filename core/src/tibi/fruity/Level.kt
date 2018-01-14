@@ -47,11 +47,12 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f
 
-    var speed = 100f
+    var speed = 80f
     private var score: Int = 0
 
     private val viewport = FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
     val gestureListener = FrankGestureListener(this)
+    val input = FruityInput(this)
 
     init {
         (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -77,7 +78,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             apples.add(Apple(this, point))
             blackBlocks.add(point)
         }
-        Gdx.input.inputProcessor = InputMultiplexer(FruityInput(this), GestureDetector(gestureListener))
+        Gdx.input.inputProcessor = InputMultiplexer(input, GestureDetector(gestureListener))
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {
@@ -108,9 +109,9 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
             ballRegainAnim = BallRegainAnim(frank, redSquareTex)
         }
         frank.update(deltaTime)
-        monsters.forEach { it.update(deltaTime) }
-        fruits.forEach { it.update(deltaTime) }
         apples.forEach { it.update(deltaTime) }
+        monsters.forEach { it.update(deltaTime) }
+//TODO useful?        fruits.forEach { it.update(deltaTime) }
         apples.removeAll(apples.filter { it.dead })
 
         if (fruits.isEmpty()) {
@@ -156,19 +157,16 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun getInputDirection(): Direction {
-        if (Gdx.input.isTouched) {
-            val touchPos = Vector3(Gdx.input.x.toFloat() , Gdx.input.y.toFloat(), 0f)
+        if (input.isTouched) {
+            val touchPos = input.touchPos
             viewport.camera.unproject(touchPos)
-
-            val dx = touchPos.x - (frank.pos.x + CELL_WIDTH / 2)
-            val dy = touchPos.y - (frank.pos.y + CELL_HEIGHT / 2)
-            if (abs(dx) > CELL_WIDTH / 2 || abs(dy) > CELL_HEIGHT / 2) {
-                if (abs(dx) > abs(dy)) {
-                    return if (dx > 0) RIGHT else LEFT
-                }
-                return if (dy > 0) UP else DOWN
+            return if (touchPos.x < SCREEN_WIDTH / 2) {
+                if (touchPos.x < SCREEN_WIDTH / 4) LEFT else RIGHT
+            } else {
+                if (touchPos.y > SCREEN_HEIGHT / 2) UP else DOWN
             }
         }
+        fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
         return when {
             isKeyPressed(Keys.X, Keys.D, Keys.RIGHT)       -> RIGHT
             isKeyPressed(Keys.Z, Keys.A, Keys.LEFT)        -> LEFT
@@ -178,7 +176,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         }
     }
 
-    private fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
 
     fun restart() {
         dispose()
@@ -257,6 +254,8 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     fun fruitAt(pos: IntPoint) = (fruits + apples).firstOrNull { it.gridPos == pos }
+
+    fun monsterAt(pos: IntPoint) = monsters.firstOrNull { it.collides(grid2Pos(pos)) }
 
     fun isOut(pos: IntPoint) = pos.x < 0 || pos.x >= GRID_WIDTH || pos.y < 0 || pos.y >= GRID_HEIGHT
 

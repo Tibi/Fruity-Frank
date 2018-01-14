@@ -1,14 +1,16 @@
- - better controls
-    - move frank toward touched pos?
-    - relative touchpad:
-      - touch, move right, up, right, without going back to center.
-      - untouch to stop
-      - tap to throw ball
- - fix throw ball through narrow ground bit
+ - draw direction buttons, resize game screen to make room for them
+ - monster should stop a bit when hitting a wall or another monster
+ - prevent pushing apple through monster (monsters should not change dir, just stop)
+ - fix throw ball through narrow ground bit (good now?)
  - apple slow fall should be slower => not to kill Frank when eating fruit below
- - slowest speedFactor should be slower
+ - apple slowed by land bit should not crash if last fall < 3
+ - slowest speedFactor should be slower (ok now?)
  - squares anim when frank (8 squares) or monster dies (4 squares)
- - halve all images, scaling will restore pixelisation
+ - redo all screenshots,
+   * not using "ActiveX streching in WinAPE"...
+   * using "half display size"
+   * full screen screenshot, cut things in Krita, zoomed
+   * then shring all images by 2 horizontally
  - let monsters dig
  - let monsters go for Frank?
  - falling prune

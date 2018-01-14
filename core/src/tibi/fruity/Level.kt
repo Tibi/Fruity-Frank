@@ -111,7 +111,6 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
         frank.update(deltaTime)
         apples.forEach { it.update(deltaTime) }
         monsters.forEach { it.update(deltaTime) }
-//TODO useful?        fruits.forEach { it.update(deltaTime) }
         apples.removeAll(apples.filter { it.dead })
 
         if (fruits.isEmpty()) {

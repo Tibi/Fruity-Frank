@@ -72,13 +72,12 @@ class Apple(level: Level, pos: IntPoint)
         if (state != IDLE) level.dig(pos, direction)
     }
 
-    // TODO put all this in move()?
     fun push(dir: Direction): Boolean {
         if (state != IDLE || dir != Direction.LEFT && dir != Direction.RIGHT) {
             return false
         }
         val newPos = gridPos + dir
-        if (level.isOut(newPos) || level.fruitAt(newPos) != null) {
+        if (level.isOut(newPos) || level.fruitAt(newPos) != null || level.monsterAt(newPos) != null ) {
             return false
         }
         state = PUSHED

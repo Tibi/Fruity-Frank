@@ -6,7 +6,7 @@ import com.badlogic.gdx.utils.Timer
 import tibi.fruity.Direction.*
 
 
-const val SCREEN_WIDTH = 649F // was 646 in original game, 3 columns were only 40 px wide
+const val SCREEN_WIDTH = 649F
 const val SCREEN_HEIGHT = 378F
 const val HEADER_HEIGHT = 28F
 
@@ -22,7 +22,7 @@ const val GRID_WIDTH = 15
 const val GRID_HEIGHT = 10
 
 const val MONSTER_SPAWN_RATE = 2  // in seconds between monster spawn
-const val NUM_BALLS = 1
+const val NUM_BALLS = 6
 
 enum class Direction { NONE, UP, DOWN, LEFT, RIGHT ;
     fun reverse() = when(this) {

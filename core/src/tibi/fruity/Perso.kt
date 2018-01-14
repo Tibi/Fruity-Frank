@@ -2,6 +2,9 @@ package tibi.fruity
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
+import com.badlogic.gdx.math.MathUtils
+import com.badlogic.gdx.math.MathUtils.randomBoolean
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.NONE
 
@@ -32,13 +35,20 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
 
     override fun getNewDirection(): Direction {
         val onPath = level.getDirectionsOnPath(gridPos)
-        if (onPath.isEmpty()) return direction
+        if (onPath.isEmpty()) return NONE
         if (onPath.size == 1) return onPath.first()
+        // > 70% chances to keep same direction
+        if (direction in onPath && randomBoolean(0.7f)) return direction
+        // never reverse if there's anothe choice
         return onPath.filter { it != direction.reverse() }.shuffled()[0]
     }
 
     override fun detectCollision(newPos: Vector2): Vector2 {
-        if (level.monsters.any { it != this && it.collides(newPos) }) {
+        val monsterCollision = level.monsters.any { it != this && it.collides(newPos) }
+        // There's an apple being pushed at our target position
+        val appleCollision: Boolean by lazy { level.apples.filter { it.state == Apple.AppleState.PUSHED }
+                                                          .any { it.collides(grid2Pos(targetGridPos)) }}
+        if (monsterCollision || appleCollision) {
             direction = direction.reverse()
             targetGridPos += direction
             return pos
@@ -62,7 +72,7 @@ class Frank(level: Level, atlas: TextureAtlas)
         }
     val animsWithBall = anims
     val animsNoBall = createAnimations(atlas, "frank/")
-    val ballTex = atlas.findRegion("frank/ball")
+    val ballTex: AtlasRegion = atlas.findRegion("frank/ball")
 
     override fun getNewDirection(): Direction {
         val dir = level.getInputDirection()

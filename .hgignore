@@ -1,9 +1,6 @@
 syntax: glob
 
-android/assets/*
-
 ## Java
-
 *.class
 *.war
 *.ear

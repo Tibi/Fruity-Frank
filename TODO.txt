@@ -13,6 +13,7 @@
  - let monsters dig
  - let monsters go for Frank?
  - falling prune
+ - next level when all fruits eaten
  - 3 lives then game over
  - 3 balls mode: one for each remaining life
  - machine gun mode
@@ -24,6 +25,7 @@
  - music
  - kdx: use asset manager?
  - kdx: use ashley?
+ - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
  - proguard?
  - icon
  - publish to Google Play?

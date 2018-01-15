@@ -269,7 +269,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     }
 
     private fun freeBlocks() = blackBlocks - apples.map { it.gridPos }
-    private fun freeHighBlocks() = highBlackBlocks - apples.map { it.gridPos }
+    fun freeHighBlocks() = highBlackBlocks - apples.map { it.gridPos }
 }
 
 

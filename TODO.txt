@@ -1,8 +1,10 @@
- - draw direction buttons, resize game screen to make room for them
+ in progress:
+   - apple should not fall through other apples
+   - apple slowed by land bit should not crash if last fall < 3
+ - use arrow images for up, down right left buttons, or use Amstrad key images?
  - monster should stop a bit when hitting a wall or another monster
  - fix throw ball through narrow ground bit (good now?)
  - apple slow fall should be slower => not to kill Frank when eating fruit below
- - apple slowed by land bit should not crash if last fall < 3
  - slowest speedFactor should be slower (ok now?)
  - squares anim when frank (8 squares) or monster dies (4 squares)
  - redo all screenshots,

@@ -45,21 +45,18 @@ class Apple(level: Level, pos: IntPoint)
         if (state == PUSHED) {
             state = IDLE
         }
+        if (state == FALLING_FAST) fallingFor++ else fallingFor = 0
         val below = gridPos.plus(0, -1)
-        val canFall = level.blackBlocks.contains(below) && level.fruitAt(below) == null
-        val canFallFast = level.highBlackBlocks.contains(below)
+        val canFall = below in level.blackBlocks && level.fruitAt(below) == null
+        val canFallFast = below in level.freeHighBlocks()
         if (!isFalling()) {
-            fallingFor = 0
             if (canFall && state != CRASHING) {
                 state = if (canFallFast) FALLING_FAST else FALLING_SLOW
             }
         } else {
-            fallingFor++
-            state = if (state == FALLING_SLOW || fallingFor < FALL_HEIGHT_BEFORE_CRASH) {
-                if (!canFall) IDLE else if (canFallFast) FALLING_FAST else FALLING_SLOW
-            } else {  // falling really fast
-                if (canFallFast) FALLING_FAST else CRASHING
-            }
+            state = if (canFallFast) FALLING_FAST
+            else if (fallingFor > FALL_HEIGHT_BEFORE_CRASH) CRASHING
+            else if (canFall) FALLING_FAST else FALLING_SLOW
         }
         return when (state) {
             FALLING_FAST, FALLING_SLOW -> Direction.DOWN

@@ -49,7 +49,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private var score: Int = 0
 
     private val viewport = StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)// FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
-    val ui = FrankUI(viewport)
+    val ui = FrankUI(this, viewport)
     val input = FruityInput(this)
     val gestureListener = FrankGestureListener(this)
 

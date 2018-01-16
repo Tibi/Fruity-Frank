@@ -54,9 +54,12 @@ class Apple(level: Level, pos: IntPoint)
                 state = if (canFallFast) FALLING_FAST else FALLING_SLOW
             }
         } else {
-            state = if (canFallFast) FALLING_FAST
-            else if (fastFallStart - gridPos.y >= FALL_HEIGHT_BEFORE_CRASH) CRASHING
-            else if (canFall) FALLING_SLOW else IDLE
+            state = when {
+                canFallFast -> FALLING_FAST
+                fastFallStart - gridPos.y >= FALL_HEIGHT_BEFORE_CRASH -> CRASHING
+                canFall -> FALLING_SLOW
+                else -> IDLE
+            }
         }
         return when (state) {
             FALLING_FAST, FALLING_SLOW -> Direction.DOWN

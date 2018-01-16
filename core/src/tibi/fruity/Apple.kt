@@ -20,12 +20,13 @@ class Apple(level: Level, pos: IntPoint)
                 else -> 1.0f
             }
             anim = if (value == CRASHING) level.appleCrashAnim else null
+            if (field != FALLING_FAST && value == FALLING_FAST) fastFallStart = gridPos.y
             field = value
         }
 
     private var animTime = 0f
     private var anim: Animation<TextureAtlas.AtlasRegion>? = null
-    private var fallingFor = 0
+    private var fastFallStart = 0
     var dead = false
 
     override fun update(deltaTime: Float) {
@@ -45,7 +46,6 @@ class Apple(level: Level, pos: IntPoint)
         if (state == PUSHED) {
             state = IDLE
         }
-        if (state == FALLING_FAST) fallingFor++ else fallingFor = 0
         val below = gridPos.plus(0, -1)
         val canFall = below in level.blackBlocks && level.fruitAt(below) == null
         val canFallFast = below in level.freeHighBlocks()
@@ -55,8 +55,8 @@ class Apple(level: Level, pos: IntPoint)
             }
         } else {
             state = if (canFallFast) FALLING_FAST
-            else if (fallingFor > FALL_HEIGHT_BEFORE_CRASH) CRASHING
-            else if (canFall) FALLING_FAST else FALLING_SLOW
+            else if (fastFallStart - gridPos.y >= FALL_HEIGHT_BEFORE_CRASH) CRASHING
+            else if (canFall) FALLING_SLOW else IDLE
         }
         return when (state) {
             FALLING_FAST, FALLING_SLOW -> Direction.DOWN

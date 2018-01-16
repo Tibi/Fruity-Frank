@@ -1,7 +1,6 @@
- in progress:
-   - apple should not fall through other apples
-   - apple slowed by land bit should not crash if last fall < 3
+ - sometimes Frank push through an apple
  - use arrow images for up, down right left buttons, or use Amstrad key images?
+ - make sure all fruits are accessible
  - monster should stop a bit when hitting a wall or another monster
  - fix throw ball through narrow ground bit (good now?)
  - apple slow fall should be slower => not to kill Frank when eating fruit below

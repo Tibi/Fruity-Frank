@@ -2,7 +2,6 @@
  - make sure all fruits are accessible
  - monster should stop a bit when hitting a wall or another monster
  - P key for pause
- - fix throw ball through narrow ground bit up and down
  - apple slow fall should be slower => not to kill Frank when eating fruit below
  - slowest speedFactor should be slower (ok now?)
  - squares anim when frank (8 squares) or monster dies (4 squares)

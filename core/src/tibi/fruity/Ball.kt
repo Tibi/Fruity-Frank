@@ -13,13 +13,15 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
     val size = Vector2(tex.originalWidth.toFloat(), tex.originalHeight.toFloat())
     val pos = startPos(frankPos, frankDir)
     val speed = startSpeed(frankDir) * level.speed
+    var beingThrown = true
     var dead = false
 
+    /** Inside Frank, on the side of its direction. */
     private fun startPos(frankPos: Vector2, frankDir: Direction) = when (frankDir) {
-        RIGHT -> Vector2(frankPos.x + CELL_WIDTH + 1, frankPos.y + CELL_HEIGHT / 2)
-        LEFT  -> Vector2(frankPos.x - size.x, frankPos.y + CELL_HEIGHT / 2)
-        UP    -> Vector2(frankPos.x + CELL_WIDTH / 2, frankPos.y + CELL_HEIGHT + 1)
-        DOWN  -> Vector2(frankPos.x + CELL_WIDTH / 2, frankPos.y - size.y)
+        RIGHT -> Vector2(frankPos.x + CELL_WIDTH - size.x - 1, frankPos.y + CELL_HEIGHT - size.y)
+        LEFT  -> Vector2(frankPos.x + 1, frankPos.y + CELL_HEIGHT - size.y)
+        UP    -> Vector2(frankPos.x + CELL_WIDTH - size.x, frankPos.y + CELL_HEIGHT - size.y - LOW_CELL_CEILING - 1)
+        DOWN  -> Vector2(frankPos.x + CELL_WIDTH - size.x, frankPos.y + 1)
         else  -> Vector2()
     }
 
@@ -29,7 +31,7 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
         RIGHT -> Vector2(1f, -1f)
         LEFT  -> Vector2(-1f, -1f)
         NONE  -> Vector2(1f, 1f)
-    } * 2f
+    } * 3f
 
     fun update(deltaTime: Float) {
         updateMove(deltaTime)
@@ -58,6 +60,7 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
                 bringInCell(pos, gpos)
                 restorePosFromCorner()
                 speed.set(reboundSpeed(wallDir))
+                beingThrown = false
             } else {
                 bringInCell(pos, newGpos)
                 restorePosFromCorner()
@@ -131,7 +134,7 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
             dead = true
         }
         // Let Frank catch the ball
-        if (collides(level.frank)) {
+        if (!beingThrown && collides(level.frank)) {
             level.frank.catchBall()
             dead = true
         }

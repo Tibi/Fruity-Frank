@@ -1,6 +1,7 @@
 package tibi.fruity
 
 import com.badlogic.gdx.Input
+import com.badlogic.gdx.Input.Keys.*
 import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.input.GestureDetector
 
@@ -17,8 +18,11 @@ class FrankGestureListener(val level: Level) : GestureDetector.GestureAdapter() 
 class FruityInput(private val level: Level) : InputAdapter() {
 
     override fun keyDown(keycode: Int): Boolean {
-        if (keycode == Input.Keys.RIGHT_BRACKET || keycode == Input.Keys.SPACE) level.frank.throwBall()
-        else if (keycode == Input.Keys.ESCAPE) level.restart()
+        when (keycode) {
+            RIGHT_BRACKET, Input.Keys.SPACE -> level.frank.throwBall()
+            ESCAPE -> level.restart()
+            P -> level.paused  = ! level.paused
+        }
         return true
     }
 

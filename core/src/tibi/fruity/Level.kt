@@ -45,6 +45,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f
 
+    var paused = false
     var speed = 80f
     private var score: Int = 0
 
@@ -93,6 +94,7 @@ class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
 
 
     private fun update(dt: Float) {
+        if (paused) return
         val deltaTime = if (dt > 0.3f) 0.3f else dt
         stateTime += deltaTime
         monsterSpawnStateTime += deltaTime

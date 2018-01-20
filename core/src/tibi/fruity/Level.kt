@@ -21,7 +21,7 @@ import tibi.fruity.Direction.*
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
-class Level(val levelNo: Int, private val game: FruityFrankGame) : Screen {
+class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
 
     val frank = Frank(this, game.atlas)
     val fruits = mutableListOf<Fruit>()

@@ -19,6 +19,7 @@ class FruityFrankGame : Game() {
     override fun dispose() {
         super.dispose()
         batch.dispose()
+        atlas.dispose()
     }
 
 }

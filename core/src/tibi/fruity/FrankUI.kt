@@ -1,8 +1,5 @@
 package tibi.fruity
 
-import com.badlogic.gdx.Gdx
-import com.badlogic.gdx.graphics.Texture
-import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import com.badlogic.gdx.scenes.scene2d.InputListener
 import com.badlogic.gdx.scenes.scene2d.Stage
@@ -17,19 +14,19 @@ import com.badlogic.gdx.utils.viewport.Viewport
  */
 class FrankUI(level: Level, viewport: Viewport) : Stage(viewport) {
 
-    val leftTex = TextureRegion(Texture(Gdx.files.internal("skin/left_key.png")))
+    val leftTex = level.game.atlas.findRegion("UI/keys/left_key")
     val leftBt = ImageButton(TextureRegionDrawable(leftTex))
 
-    val rightTex = TextureRegion(Texture(Gdx.files.internal("skin/right_key.png")))
+    val rightTex = level.game.atlas.findRegion("UI/keys/right_key")
     val rightBt = ImageButton(TextureRegionDrawable(rightTex))
     
-    val upTex = TextureRegion(Texture(Gdx.files.internal("skin/up_key.png")))
+    val upTex = level.game.atlas.findRegion("UI/keys/up_key")
     val upBt = ImageButton(TextureRegionDrawable(upTex))
 
-    val downTex = TextureRegion(Texture(Gdx.files.internal("skin/down_key.png")))
+    val downTex = level.game.atlas.findRegion("UI/keys/down_key")
     val downBt = ImageButton(TextureRegionDrawable(downTex))
 
-    val throwTex = TextureRegion(Texture(Gdx.files.internal("skin/]_key.png")))
+    val throwTex = level.game.atlas.findRegion("UI/keys/]_key")
     val throwBt = ImageButton(TextureRegionDrawable(throwTex))
 
     init {

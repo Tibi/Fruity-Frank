@@ -1,6 +1,6 @@
+ - monster should stop a bit when hitting a wall or another monster
  - sometimes Frank pushes through an apple when it is blocked by a monster
  - make sure all fruits are accessible
- - monster should stop a bit when hitting a wall or another monster
  - apple slow fall should be slower => not to kill Frank when eating fruit below
  - slowest speedFactor should be slower (ok now?)
  - squares anim when frank (8 squares) or monster dies (4 squares)

@@ -1,10 +1,9 @@
- - vary color of square anims
  - music
    * add midi files for other levels https://en.wikipedia.org/wiki/Fruity_Frank
  - next level when all fruits eaten
  - 3 lives then game over
  - add a small probability for monsters to reverse dir
- 
+ - save game state
  - monster should stop a bit when hitting a wall or another monster
  - sometimes Frank pushes through an apple when it is blocked by a monster
  - make sure all fruits are accessible

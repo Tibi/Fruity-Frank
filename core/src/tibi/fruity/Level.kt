@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputMultiplexer
 import com.badlogic.gdx.Screen
+import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
@@ -39,7 +40,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
-    val redSquareTex: AtlasRegion = game.atlas.findRegion("frank/red_square")
+    val whiteSquareTex: AtlasRegion = game.atlas.findRegion("backgrounds/white_square")
     var explodeAnims = mutableListOf<ExplodeAnim>()
     private var isRegainingBall = false
 
@@ -111,7 +112,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         balls.forEach { it.update(dt) }
         balls.removeAll(balls.filter { it.dead })
         if (balls.isEmpty() && frank.numBalls == 0 && !isRegainingBall) {
-            val anim = ExplodeAnim(frank, redSquareTex, false)
+            val anim = ExplodeAnim(frank, whiteSquareTex, Color.YELLOW, false)
             explodeAnims.add(anim)
             isRegainingBall = true
             anim.whenFinished = {
@@ -130,11 +131,11 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     }
 
     fun killFrank() {
-        explodeAnims.add(ExplodeAnim(frank, redSquareTex))
+        explodeAnims.add(ExplodeAnim(frank, whiteSquareTex, Color.RED))
     }
 
     fun killMonster(monster: Monster) {
-        explodeAnims.add(ExplodeAnim(monster, redSquareTex))
+        explodeAnims.add(ExplodeAnim(monster, whiteSquareTex, Color.BLUE))
         monsters.remove(monster)
     }
 
@@ -172,7 +173,9 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         explodeAnims.forEach { it.render(batch) }
 
         batch.end()
-
+        if (batch.renderCalls > 1) {
+            println("GPU access: ${batch.renderCalls}")
+        }
         ui.draw()
     }
 
@@ -303,7 +306,7 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
 }
 
 
-class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val isExplosion: Boolean = true) {
+class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val color: Color, val isExplosion: Boolean = true) {
 
     var dist = if (isExplosion) 0f else GAME_WIDTH  // so it waits before starting ball regain anim
 
@@ -321,6 +324,8 @@ class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val isExplosion:
     }
 
     fun render(batch: SpriteBatch) {
+        val oldColor = batch.color
+        batch.color = color
         val targetX = source.pos.x + CELL_WIDTH / 2
         val targetY = source.pos.y + CELL_HEIGHT / 2
         batch.draw(tex, targetX + dist, targetY + dist)
@@ -333,5 +338,6 @@ class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val isExplosion:
             batch.draw(tex, targetX - dist, targetY)
             batch.draw(tex, targetX - dist, targetY)
         }
+        batch.color = oldColor
     }
 }

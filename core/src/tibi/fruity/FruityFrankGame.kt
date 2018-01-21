@@ -13,7 +13,13 @@ class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
     override fun create() {
         batch = SpriteBatch()
         atlas = TextureAtlas("main.atlas")
-        screen = Level(1, this)
+        screen = Level(0, this)
+    }
+
+    fun restartLevel(next: Boolean = false) {
+        screen.dispose()
+        val levelNo = (screen as Level).levelNo + if (next) 1 else 0
+        screen = Level(levelNo, this)
     }
 
     override fun dispose() {
@@ -25,6 +31,6 @@ class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
 }
 
 interface MusicPlayer {
-    fun play(speedFactor: Float)
+    fun play(fileName: String, speedFactor: Float)
     fun release()
 }

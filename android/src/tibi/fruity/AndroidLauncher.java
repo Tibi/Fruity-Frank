@@ -36,11 +36,11 @@ public class AndroidLauncher extends AndroidApplication {
 
 		private MediaPlayer player;
 
-		@Override public void play(float speedFactor) {
+		@Override public void play(String fileName, float speedFactor) {
 			try {
 				release();
 				player = new MediaPlayer();
-				AndroidFileHandle file = (AndroidFileHandle) Gdx.files.internal("level 1.mid");
+				AndroidFileHandle file = (AndroidFileHandle) Gdx.files.internal(fileName + ".mid");
 				AssetFileDescriptor descriptor = file.getAssetFileDescriptor();
 				player.setDataSource(descriptor.getFileDescriptor(),
 				                     descriptor.getStartOffset(), descriptor.getLength());

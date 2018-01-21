@@ -1,6 +1,10 @@
  - music
    * add midi files for other levels https://en.wikipedia.org/wiki/Fruity_Frank
  - next level when all fruits eaten
+   * next music
+   * more != monsters
+   * more != fruits
+   * faster
  - 3 lives then game over
  - add a small probability for monsters to reverse dir
  - save game state

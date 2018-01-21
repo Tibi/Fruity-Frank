@@ -57,6 +57,8 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val input = FruityInput(this)
     val gestureListener = FrankGestureListener(this)
 
+    val debug = true
+
     init {
         (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
         viewport.camera.position.x -= 200f
@@ -85,7 +87,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             blackBlocks.add(point)
         }
         Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
-        game.musicPlayer?.play(speedFactor)
+        game.musicPlayer?.play("level $levelNo", speedFactor)
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {
@@ -193,12 +195,6 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)   -> DOWN
             else -> NONE
         }
-    }
-
-
-    fun restart() {
-        dispose()
-        game.screen = Level(levelNo, game)
     }
 
     override fun show() {}

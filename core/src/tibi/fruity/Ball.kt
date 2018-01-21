@@ -130,7 +130,7 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
     private fun detectCollisions() {
         // Kill monsters
         level.monsters.firstOrNull { collides(it) }?.let {
-            level.monsters.remove(it)
+            level.killMonster(it)
             dead = true
         }
         // Let Frank catch the ball

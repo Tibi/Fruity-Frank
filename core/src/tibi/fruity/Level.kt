@@ -26,7 +26,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val frank = Frank(this, game.atlas)
     val fruits = mutableListOf<Fruit>()
     val apples = mutableListOf<Apple>()
-    val monsters = mutableListOf<Perso>()
+    val monsters = mutableListOf<Monster>()
     val balls = mutableListOf<Ball>()
     val blackBlocks = mutableSetOf<IntPoint>()
     val highBlackBlocks = mutableSetOf<IntPoint>()
@@ -40,7 +40,8 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
     val redSquareTex: AtlasRegion = game.atlas.findRegion("frank/red_square")
-    var ballRegainAnim: BallRegainAnim? = null
+    var explodeAnims = mutableListOf<ExplodeAnim>()
+    private var isRegainingBall = false
 
     private var stateTime: Float = 0f
     private var monsterSpawnStateTime = 0f
@@ -105,14 +106,18 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
                 monsterSpawnStateTime = 0f
             }
         }
-        if (ballRegainAnim?.update(deltaTime) == false) {
-            ballRegainAnim = null
-            frank.regainBalls()
-        }
+        explodeAnims.forEach { it.update(deltaTime) }
+        explodeAnims.removeAll { it.finished }
         balls.forEach { it.update(dt) }
         balls.removeAll(balls.filter { it.dead })
-        if (balls.isEmpty() && frank.numBalls == 0 && ballRegainAnim == null) {
-            ballRegainAnim = BallRegainAnim(frank, redSquareTex)
+        if (balls.isEmpty() && frank.numBalls == 0 && !isRegainingBall) {
+            val anim = ExplodeAnim(frank, redSquareTex, false)
+            explodeAnims.add(anim)
+            isRegainingBall = true
+            anim.whenFinished = {
+                frank.regainBalls()
+                isRegainingBall = false
+            }
         }
         frank.update(deltaTime)
         apples.forEach { it.update(deltaTime) }
@@ -125,7 +130,14 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     }
 
     fun killFrank() {
+        explodeAnims.add(ExplodeAnim(frank, redSquareTex))
     }
+
+    fun killMonster(monster: Monster) {
+        explodeAnims.add(ExplodeAnim(monster, redSquareTex))
+        monsters.remove(monster)
+    }
+
 
     override fun render(deltaTime: Float) {
         ui.act(deltaTime)
@@ -157,7 +169,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         frank.render(batch)
 
         balls.forEach { it.render(batch) }
-        ballRegainAnim?.render(batch)
+        explodeAnims.forEach { it.render(batch) }
 
         batch.end()
 
@@ -291,21 +303,35 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
 }
 
 
-class BallRegainAnim(val frank: Frank, val tex: TextureRegion) {
+class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val isExplosion: Boolean = true) {
 
-    var ballRegainDist = GAME_WIDTH   // so it waits before starting
+    var dist = if (isExplosion) 0f else GAME_WIDTH  // so it waits before starting ball regain anim
 
-    fun update(deltaTime: Float): Boolean {
-        ballRegainDist -= deltaTime * 200
-        return ballRegainDist > 0
+    var whenFinished: () -> Unit = {}
+    var finished = false
+
+    fun update(deltaTime: Float) {
+        if (finished) return
+        val speed = if (isExplosion) 300 else - 200
+        dist += speed * deltaTime
+        if (if (isExplosion) dist > GAME_WIDTH else dist < 0) {
+            finished = true
+            whenFinished.invoke()
+        }
     }
 
     fun render(batch: SpriteBatch) {
-        val targetX = frank.pos.x + CELL_WIDTH / 2
-        val targetY = frank.pos.y + CELL_HEIGHT / 2
-        batch.draw(tex, targetX + ballRegainDist, targetY + ballRegainDist)
-        batch.draw(tex, targetX + ballRegainDist, targetY - ballRegainDist)
-        batch.draw(tex, targetX - ballRegainDist, targetY + ballRegainDist)
-        batch.draw(tex, targetX - ballRegainDist, targetY - ballRegainDist)
+        val targetX = source.pos.x + CELL_WIDTH / 2
+        val targetY = source.pos.y + CELL_HEIGHT / 2
+        batch.draw(tex, targetX + dist, targetY + dist)
+        batch.draw(tex, targetX + dist, targetY - dist)
+        batch.draw(tex, targetX - dist, targetY + dist)
+        batch.draw(tex, targetX - dist, targetY - dist)
+        if (isExplosion) {
+            batch.draw(tex, targetX, targetY + dist)
+            batch.draw(tex, targetX, targetY - dist)
+            batch.draw(tex, targetX - dist, targetY)
+            batch.draw(tex, targetX - dist, targetY)
+        }
     }
 }

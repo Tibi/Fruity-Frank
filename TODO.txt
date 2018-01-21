@@ -1,8 +1,6 @@
+ - vary color of square anims
  - music
-   * use midi files, speed should change with game speed,
-   * list of titles https://en.wikipedia.org/wiki/Fruity_Frank
-   * Android MediaPlayer class, or https://github.com/kshoji/JFugue-for-Android
-- squares anim when frank (8 squares) or monster dies (4 squares) vary colors
+   * add midi files for other levels https://en.wikipedia.org/wiki/Fruity_Frank
  - next level when all fruits eaten
  - 3 lives then game over
  - add a small probability for monsters to reverse dir

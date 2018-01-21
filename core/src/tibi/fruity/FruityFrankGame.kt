@@ -5,7 +5,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 
 
-class FruityFrankGame : Game() {
+class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
 
     lateinit var batch: SpriteBatch
     lateinit var atlas: TextureAtlas
@@ -24,3 +24,7 @@ class FruityFrankGame : Game() {
 
 }
 
+interface MusicPlayer {
+    fun play(speedFactor: Float)
+    fun release()
+}

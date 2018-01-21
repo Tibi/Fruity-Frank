@@ -16,7 +16,7 @@ android {
     }
     defaultConfig {
         applicationId "tibi.fruity"
-        minSdkVersion 8
+        minSdkVersion 23
         targetSdkVersion 25
     }
 }

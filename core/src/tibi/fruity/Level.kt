@@ -46,7 +46,8 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     private var monsterSpawnStateTime = 0f
 
     var paused = false
-    var speed = 80f
+    var speedFactor = 1.0f
+    val speed: Float get() = 80f * speedFactor
     private var score: Int = 0
 
     private val viewport = StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)// FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -82,6 +83,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             blackBlocks.add(point)
         }
         Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
+        game.musicPlayer?.play(speedFactor)
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {

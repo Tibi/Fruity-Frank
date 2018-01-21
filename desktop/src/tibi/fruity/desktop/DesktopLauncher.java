@@ -12,6 +12,6 @@ public class DesktopLauncher {
 		LwjglApplicationConfiguration config = new LwjglApplicationConfiguration();
 		config.width = (int) SCREEN_WIDTH;
 		config.height = (int) SCREEN_HEIGHT;
-		new LwjglApplication(new FruityFrankGame(), config);
+		new LwjglApplication(new FruityFrankGame(null), config);
 	}
 }

@@ -1,19 +1,25 @@
+ - music
+   * use midi files, speed should change with game speed,
+   * list of titles https://en.wikipedia.org/wiki/Fruity_Frank
+   * Android MediaPlayer class, or https://github.com/kshoji/JFugue-for-Android
+- squares anim when frank (8 squares) or monster dies (4 squares) vary colors
+ - next level when all fruits eaten
+ - 3 lives then game over
+ - add a small probability for monsters to reverse dir
+ 
  - monster should stop a bit when hitting a wall or another monster
  - sometimes Frank pushes through an apple when it is blocked by a monster
  - make sure all fruits are accessible
  - apple slow fall should be slower => not to kill Frank when eating fruit below
  - slowest speedFactor should be slower (ok now?)
- - squares anim when frank (8 squares) or monster dies (4 squares)
  - redo all screenshots,
    * not using "ActiveX streching in WinAPE"...
    * using "half display size"
    * full screen screenshot, cut things in Krita, zoomed
    * then shring all images by 2 horizontally
  - let monsters dig
- - let monsters go for Frank?
+ - let monsters go for Frank? only fraise
  - falling prune
- - next level when all fruits eaten
- - 3 lives then game over
  - 3 balls mode: one for each remaining life
  - machine gun mode
  - bitmap font for score
@@ -21,7 +27,6 @@
  - color rotation: tinted sprite for black path on win
  - bonus and fraise monsters
  - sound
- - music
  - kdx: use asset manager?
  - kdx: use ashley?
  - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode

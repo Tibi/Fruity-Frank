@@ -3,7 +3,6 @@ package tibi.fruity
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
-import com.badlogic.gdx.math.MathUtils
 import com.badlogic.gdx.math.MathUtils.randomBoolean
 import com.badlogic.gdx.math.Vector2
 import tibi.fruity.Direction.NONE
@@ -46,8 +45,7 @@ open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor
     override fun detectCollision(newPos: Vector2): Vector2 {
         val monsterCollision = level.monsters.any { it != this && it.collides(newPos) }
         // There's an apple being pushed at our target position
-        val appleCollision: Boolean by lazy { level.apples.filter { it.state == Apple.AppleState.PUSHED }
-                                                          .any { it.collides(grid2Pos(targetGridPos)) }}
+        val appleCollision: Boolean by lazy { level.apples.any { it.collides(grid2Pos(targetGridPos)) }}
         if (monsterCollision || appleCollision) {
             direction = direction.reverse()
             targetGridPos += direction

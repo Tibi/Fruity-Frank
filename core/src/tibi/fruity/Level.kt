@@ -32,7 +32,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val blackBlocks = mutableSetOf<IntPoint>()
     val highBlackBlocks = mutableSetOf<IntPoint>()
 
-    private val bg = game.atlas.findRegion("backgrounds/level1")
+    private val bg = game.atlas.findRegion("backgrounds/level${levelNo+1}")
     private val header = game.atlas.findRegion("backgrounds/header")
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
@@ -128,7 +128,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         apples.removeAll(apples.filter { it.dead })
 
         if (fruits.isEmpty()) {
-            println("WINNER!!")
+            game.restartLevel(true)
         }
     }
 
@@ -315,7 +315,7 @@ class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val color: Color
         dist += speed * deltaTime
         if (if (isExplosion) dist > GAME_WIDTH else dist < 0) {
             finished = true
-            whenFinished.invoke()
+            whenFinished()
         }
     }
 

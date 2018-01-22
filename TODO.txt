@@ -1,9 +1,12 @@
  - music
+   * try to make it sound nice
    * add midi files for other levels https://en.wikipedia.org/wiki/Fruity_Frank
  - next level when all fruits eaten
-   * next music
-   * more != monsters
-   * more != fruits
+   * blink background by color rotation: tinted sprite for black path?
+   * next music DONE
+   * next background DONE
+   * add monsters
+   * add fruits DONE
    * faster
  - 3 lives then game over
  - add a small probability for monsters to reverse dir
@@ -25,7 +28,6 @@
  - machine gun mode
  - bitmap font for score
  - other screens: intro, high scores, etc..
- - color rotation: tinted sprite for black path on win
  - bonus and fraise monsters
  - sound
  - kdx: use asset manager?

@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2
 import com.badlogic.gdx.utils.Timer
 import tibi.fruity.Direction.*
 
-
+const val NUM_LEVELS = 7
 const val GAME_WIDTH = 649f
 const val GAME_HEIGHT = 378f
 const val SCREEN_WIDTH = GAME_WIDTH + 300f

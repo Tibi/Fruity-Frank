@@ -18,8 +18,9 @@ class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
 
     fun restartLevel(next: Boolean = false) {
         screen.dispose()
-        val levelNo = (screen as Level).levelNo + if (next) 1 else 0
-        screen = Level(levelNo, this)
+        val levelNo = (screen as Level).levelNo
+        val nextLevelNo = if (levelNo < NUM_LEVELS - 1) levelNo + 1 else 0
+        screen = Level(if (next) nextLevelNo else levelNo, this)
     }
 
     override fun dispose() {

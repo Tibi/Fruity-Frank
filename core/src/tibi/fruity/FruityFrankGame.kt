@@ -13,13 +13,13 @@ class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
     override fun create() {
         batch = SpriteBatch()
         atlas = TextureAtlas("main.atlas")
-        screen = Level(0, this)
+        screen = Level(1, this)
     }
 
     fun restartLevel(next: Boolean = false) {
         screen.dispose()
         val levelNo = (screen as Level).levelNo
-        val nextLevelNo = if (levelNo < NUM_LEVELS - 1) levelNo + 1 else 0
+        val nextLevelNo = if (levelNo < NUM_LEVELS) levelNo + 1 else 1
         screen = Level(if (next) nextLevelNo else levelNo, this)
     }
 

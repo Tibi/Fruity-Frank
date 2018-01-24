@@ -32,7 +32,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val blackBlocks = mutableSetOf<IntPoint>()
     val highBlackBlocks = mutableSetOf<IntPoint>()
 
-    private val bg = game.atlas.findRegion("backgrounds/level${levelNo+1}")
+    private val bg = game.atlas.findRegion("backgrounds/level${levelNo}")
     private val header = game.atlas.findRegion("backgrounds/header")
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
@@ -75,7 +75,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         val randPoints = getRandomFreePoints()
         var pointIndex = 0
         for (i in 0..20) {
-            val textureIndex = randomTriangular(0f, levelNo + 1f, 0f).toInt()
+            val textureIndex = randomTriangular(0f, levelNo.toFloat(), 0f).toInt()
             fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints[pointIndex++], 10))
         }
         for (i in 0..10) {
@@ -87,7 +87,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             blackBlocks.add(point)
         }
         Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
-        game.musicPlayer?.play("level $levelNo", speedFactor)
+        game.musicPlayer?.play("level $levelNo.mid", speedFactor)
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {

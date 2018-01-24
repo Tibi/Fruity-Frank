@@ -40,7 +40,7 @@ public class AndroidLauncher extends AndroidApplication {
 			try {
 				release();
 				player = new MediaPlayer();
-				AndroidFileHandle file = (AndroidFileHandle) Gdx.files.internal(fileName + ".mid");
+				AndroidFileHandle file = (AndroidFileHandle) Gdx.files.internal(fileName);
 				AssetFileDescriptor descriptor = file.getAssetFileDescriptor();
 				player.setDataSource(descriptor.getFileDescriptor(),
 				                     descriptor.getStartOffset(), descriptor.getLength());

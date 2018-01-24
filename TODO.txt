@@ -1,7 +1,5 @@
  - music
-   * try to make it sound nice
-   * add midi files for other levels https://en.wikipedia.org/wiki/Fruity_Frank
-   * midi in desktop version?
+   * make all musics the same tempo
  - next level when all fruits eaten
    * blink background by color rotation: tinted sprite for black path?
    * next music DONE

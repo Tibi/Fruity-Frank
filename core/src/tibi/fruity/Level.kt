@@ -48,6 +48,8 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     private var stateTime = 0f
     private var monsterSpawnStateTime = 0f
     private var winning = false
+    private val blinkColors = listOf(Color.valueOf("000063"), Color.valueOf("0000FD"), Color.valueOf("660200"), Color.valueOf("660266"), Color.valueOf("6602FE"), Color.valueOf("FE0100"), Color.valueOf("FE0265"), Color.valueOf("FF03FE"), Color.valueOf("006700"), Color.valueOf("006766"), Color.valueOf("0067FF"), Color.valueOf("666700"), Color.valueOf("686868"), Color.valueOf("6768FE"), Color.valueOf("FF6901"), Color.valueOf("FF6968"), Color.valueOf("FF69FF"), Color.valueOf("01FF02"), Color.valueOf("02FF66"), Color.valueOf("03FFFF"), Color.valueOf("67FF03"), Color.valueOf("67FF68"), Color.valueOf("69FFFF"), Color.valueOf("FFFF03"), Color.valueOf("FFFF6A"), Color.valueOf("FFFFFF"))
+    private var blinkIndex = 0
 
     var paused = false
     var speedFactor = 1.0f
@@ -136,7 +138,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         if (fruits.isEmpty() && !winning) {
             winning = true
             paused = true
-            schedule(2f, { game.restartLevel(true) })
+            schedule(3f, { game.restartLevel(true) })
         }
     }
 
@@ -160,8 +162,8 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
 
         batch.shader = shader
         shader.begin()
-        val color = if (winning) listOf(Color.BLUE, Color.CYAN, Color.RED, Color.GREEN, Color.YELLOW)[random(4)]
-        else Color.BLACK
+        val color = if (winning) blinkColors[blinkIndex++] else Color.BLACK
+        if (blinkIndex == blinkColors.size) blinkIndex = 0
         shader.setUniformf("u_color", color)
         shader.end()
 

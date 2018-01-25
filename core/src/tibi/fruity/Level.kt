@@ -14,6 +14,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion
 import com.badlogic.gdx.graphics.g2d.TextureRegion
+import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.MathUtils.*
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
@@ -44,8 +45,9 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     var explodeAnims = mutableListOf<ExplodeAnim>()
     private var isRegainingBall = false
 
-    private var stateTime: Float = 0f
+    private var stateTime = 0f
     private var monsterSpawnStateTime = 0f
+    private var winning = false
 
     var paused = false
     var speedFactor = 1.0f
@@ -56,6 +58,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val ui = FrankUI(this, viewport)
     val input = FruityInput(this)
     val gestureListener = FrankGestureListener(this)
+    val shader = ShaderProgram(Gdx.files.internal("passthrough.vsh"), Gdx.files.internal("cycle_black.fsh"))
 
     val debug = true
 
@@ -63,6 +66,9 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
         viewport.camera.position.x -= 200f
         viewport.camera.update()
+
+        ShaderProgram.pedantic = false
+        //println(if (shader.isCompiled) "shader compiled, yay" else shader.log)
 
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 
@@ -74,7 +80,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         }
         val randPoints = getRandomFreePoints()
         var pointIndex = 0
-        for (i in 0..20) {
+        for (i in 0..13) {
             val textureIndex = randomTriangular(0f, levelNo.toFloat(), 0f).toInt()
             fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints[pointIndex++], 10))
         }
@@ -127,8 +133,10 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         monsters.forEach { it.update(deltaTime) }
         apples.removeAll(apples.filter { it.dead })
 
-        if (fruits.isEmpty()) {
-            game.restartLevel(true)
+        if (fruits.isEmpty() && !winning) {
+            winning = true
+            paused = true
+            schedule(2f, { game.restartLevel(true) })
         }
     }
 
@@ -149,6 +157,14 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
         val batch = game.batch
         batch.projectionMatrix = viewport.camera.combined
+
+        batch.shader = shader
+        shader.begin()
+        val color = if (winning) listOf(Color.BLUE, Color.CYAN, Color.RED, Color.GREEN, Color.YELLOW)[random(4)]
+        else Color.BLACK
+        shader.setUniformf("u_color", color)
+        shader.end()
+
         batch.begin()
         batch.disableBlending()
 
@@ -156,12 +172,14 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
         // Background
         TiledDrawable(bg).draw(batch, 0F, 0F, GAME_WIDTH, GAME_HEIGHT - HEADER_HEIGHT - 1)
+
         // Black paths
         for (blackBlock in blackBlocks) {
             val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
             val gridPos = grid2Pos(blackBlock)
             batch.draw(tex, gridPos.x, gridPos.y)
         }
+
         // Monster gate
         val gridPos = grid2Pos(gatePos)
         batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)

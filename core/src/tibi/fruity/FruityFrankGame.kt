@@ -1,6 +1,8 @@
 package tibi.fruity
 
 import com.badlogic.gdx.Game
+import com.badlogic.gdx.Gdx
+import com.badlogic.gdx.files.FileHandle
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 
@@ -31,7 +33,14 @@ class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
 
 }
 
+const val MUSIC_DIR = "music"
+
 interface MusicPlayer {
-    fun play(fileName: String, speedFactor: Float)
+
+    fun play(fileNamePrefix: String, speedFactor: Float)
     fun release()
+
+    fun findFile(prefix: String): FileHandle {
+        return Gdx.files.internal(MUSIC_DIR).list({ _, name -> name.startsWith(prefix) })[0]
+    }
 }

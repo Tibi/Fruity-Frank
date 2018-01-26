@@ -95,7 +95,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             blackBlocks.add(point)
         }
         Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
-        game.musicPlayer?.play("level $levelNo.mid", speedFactor)
+        game.musicPlayer?.play("level $levelNo", speedFactor)
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {

@@ -31,16 +31,17 @@ public class AndroidLauncher extends AndroidApplication {
 		player.release();
 	}
 
+	//TODO convert to Kotlin
 
 	public class MusicPlayerAndroid implements MusicPlayer {
 
 		private MediaPlayer player;
 
-		@Override public void play(String fileName, float speedFactor) {
+		@Override public void play(String fileNamePrefix, float speedFactor) {
 			try {
 				release();
 				player = new MediaPlayer();
-				AndroidFileHandle file = (AndroidFileHandle) Gdx.files.internal(fileName);
+				AndroidFileHandle file = (AndroidFileHandle) findFile(fileNamePrefix);
 				AssetFileDescriptor descriptor = file.getAssetFileDescriptor();
 				player.setDataSource(descriptor.getFileDescriptor(),
 				                     descriptor.getStartOffset(), descriptor.getLength());

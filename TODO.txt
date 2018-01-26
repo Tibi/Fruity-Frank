@@ -1,6 +1,4 @@
  - apple slow fall should be slower => not to kill Frank when eating fruit below
- - music
-   * make all musics the same tempo
  - next level when all fruits eaten
    * blink background by color rotation DONE
    * next music DONE

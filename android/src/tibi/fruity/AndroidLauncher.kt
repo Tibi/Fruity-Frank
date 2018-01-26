@@ -53,6 +53,11 @@ class AndroidLauncher : AndroidApplication() {
 
         }
 
+        override fun pause(value: Boolean) {
+            if (value) mplayer?.pause()
+            else mplayer?.start()
+        }
+
         override fun release() {
             if (mplayer != null) {
                 mplayer!!.release()

@@ -1,5 +1,6 @@
 package tibi.fruity
 
+import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputMultiplexer
@@ -18,6 +19,7 @@ import com.badlogic.gdx.graphics.glutils.ShaderProgram
 import com.badlogic.gdx.input.GestureDetector
 import com.badlogic.gdx.math.MathUtils.*
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
+import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.StretchViewport
 import tibi.fruity.Direction.*
 import com.badlogic.gdx.utils.Array as GdxArray
@@ -52,11 +54,14 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     private var blinkIndex = 0
 
     var paused = false
+        set(value) { game.musicPlayer.pause(value); field = value }
     var speedFactor = 1.0f
     val speed: Float get() = 80f * speedFactor
     private var score: Int = 0
 
-    private val viewport = StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)// FitViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
+    private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
+    private val viewport = if (isAndroid) StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
+                           else FitViewport(GAME_WIDTH, GAME_HEIGHT)
     val ui = FrankUI(this, viewport)
     val input = FruityInput(this)
     val gestureListener = FrankGestureListener(this)
@@ -65,9 +70,11 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val debug = true
 
     init {
-        (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
-        viewport.camera.position.x -= 200f
-        viewport.camera.update()
+        if (isAndroid) {
+            (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
+            viewport.camera.position.x -= 200f
+            viewport.camera.update()
+        }
 
         ShaderProgram.pedantic = false
         if (!shader.isCompiled) Gdx.app.log("", shader.log)
@@ -95,7 +102,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             blackBlocks.add(point)
         }
         Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
-        game.musicPlayer?.play("level $levelNo", speedFactor)
+        game.musicPlayer.play("level $levelNo", speedFactor)
     }
 
     private fun getRandomFreePoints(): List<IntPoint> {

@@ -39,6 +39,11 @@ object DesktopLauncher {
             sequencer.start()
         }
 
+        override fun pause(value: Boolean) {
+            if (value) sequencer.stop()
+            else sequencer.start()
+        }
+
         override fun release() {
             if (sequencer.isOpen) {
                 sequencer.stop()

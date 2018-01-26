@@ -7,7 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
 
 
-class FruityFrankGame(val musicPlayer: MusicPlayer?) : Game() {
+class FruityFrankGame(val musicPlayer: MusicPlayer) : Game() {
 
     lateinit var batch: SpriteBatch
     lateinit var atlas: TextureAtlas
@@ -38,6 +38,8 @@ const val MUSIC_DIR = "music"
 interface MusicPlayer {
 
     fun play(fileNamePrefix: String, speedFactor: Float)
+    fun pause(value: Boolean)
+
     fun release()
 
     fun findFile(prefix: String): FileHandle {

@@ -1,20 +1,22 @@
+ - apple slow fall should be slower => not to kill Frank when eating fruit below
  - music
    * make all musics the same tempo
  - next level when all fruits eaten
-   * blink background by color rotation: tinted sprite for black path?
+   * blink background by color rotation DONE
    * next music DONE
    * next background DONE
    * add monsters
    * add fruits DONE
    * faster
+ - ktx-app:  KtxGame, KtxScreen, "use" around batch and shader calls
+ - ktx-async use it to load assets
  - 3 lives then game over
+ - sound
  - add a small probability for monsters to reverse dir
  - save game state
  - monster should stop a bit when hitting a wall or another monster
  - sometimes Frank pushes through an apple when it is blocked by a monster
- - make sure all fruits are accessible
- - apple slow fall should be slower => not to kill Frank when eating fruit below
- - slowest speedFactor should be slower (ok now?)
+ - make sure all fruits are accessible?
  - redo all screenshots,
    * not using "ActiveX streching in WinAPE"...
    * using "half display size"
@@ -28,8 +30,6 @@
  - bitmap font for score
  - other screens: intro, high scores, etc..
  - bonus and fraise monsters
- - sound
- - kdx: use asset manager?
  - kdx: use ashley?
  - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
  - proguard?

@@ -70,7 +70,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         viewport.camera.update()
 
         ShaderProgram.pedantic = false
-        //println(if (shader.isCompiled) "shader compiled, yay" else shader.log)
+        if (!shader.isCompiled) Gdx.app.log("", shader.log)
 
         bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
 

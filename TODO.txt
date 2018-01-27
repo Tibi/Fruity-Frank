@@ -1,4 +1,3 @@
- - apple slow fall should be slower => not to kill Frank when eating fruit below
  - next level when all fruits eaten
    * blink background by color rotation DONE
    * next music DONE

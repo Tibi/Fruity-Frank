@@ -13,10 +13,10 @@ class Apple(level: Level, pos: IntPoint)
 
     enum class AppleState { IDLE, PUSHED, FALLING_SLOW, FALLING_FAST, CRASHING }
 
-    var state = IDLE
+    private var state = IDLE
         set(value) {
             speedFactor = when (value) {
-                FALLING_SLOW -> 0.1f
+                FALLING_SLOW -> 0.038f
                 else -> 1.0f
             }
             anim = if (value == CRASHING) level.appleCrashAnim else null

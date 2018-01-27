@@ -4,9 +4,7 @@ import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputMultiplexer
-import com.badlogic.gdx.Screen
 import com.badlogic.gdx.graphics.Color
-import com.badlogic.gdx.graphics.GL20
 import com.badlogic.gdx.graphics.OrthographicCamera
 import com.badlogic.gdx.graphics.Texture
 import com.badlogic.gdx.graphics.g2d.Animation
@@ -21,6 +19,8 @@ import com.badlogic.gdx.math.MathUtils.*
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.StretchViewport
+import ktx.app.KtxScreen
+import ktx.app.use
 import tibi.fruity.Direction.*
 import tibi.fruity.MonsterType.GUY
 import tibi.fruity.MonsterType.PRUNE
@@ -28,8 +28,9 @@ import kotlin.math.min
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
-class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
+class GameScreen(val game: FruityFrankGame) : KtxScreen {
 
+    var levelNo = 1
     val frank = Frank(this, game.atlas)
     val fruits = mutableListOf<Fruit>()
     val apples = mutableListOf<Apple>()
@@ -38,10 +39,15 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val blackBlocks = mutableSetOf<IntPoint>()
     val highBlackBlocks = mutableSetOf<IntPoint>()
 
-    private val bg = game.atlas.findRegion("backgrounds/level${levelNo}")
+    private val backgrounds = (1..7).map { game.atlas.findRegion("backgrounds/level$it").also {
+        it.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
+    } }
     private val header = game.atlas.findRegion("backgrounds/header")
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
+    val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
+        game.atlas.findRegion("fruits/" + it)
+    }
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
@@ -59,7 +65,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
 
     var paused = false
         set(value) { game.musicPlayer.pause(value); field = value }
-    var speedFactor = 1.0f + levelNo / 8f
+    var speedFactor = 1.0f
     val speed: Float get() = 90f * speedFactor
     private var score: Int = 0
 
@@ -74,18 +80,25 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val debug = true
 
     init {
-        Gdx.app.log("", "Starting level $levelNo")
         if (isAndroid) {
             (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
             viewport.camera.position.x -= 200f
             viewport.camera.update()
         }
-
         ShaderProgram.pedantic = false
         if (!shader.isCompiled) Gdx.app.log("", shader.log)
+        Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
 
-        bg.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
+        startLevel()
+    }
 
+    fun startLevel(next: Boolean = false) {
+        clear()
+        if (next) {
+            levelNo = if (levelNo < NUM_LEVELS) levelNo + 1 else 1
+        }
+        speedFactor = 1.0f + levelNo / 8f
+        Gdx.app.log("", "Starting level $levelNo")
         drawBlackCross(gatePos)
         frank.putAt(gatePos.copy(y = 0))
 
@@ -93,9 +106,6 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         var pointIndex = 0
 
         // Creates 20 fruits to eat
-        val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
-            game.atlas.findRegion("fruits/" + it)
-        }
         for (i in 1..20) {
             val textureIndex = randomTriangular(0f, levelNo.toFloat(), 0f).toInt()
             fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints[pointIndex++], 10))
@@ -109,8 +119,17 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
             apples.add(Apple(this, point))
             blackBlocks.add(point)
         }
-        Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
         game.musicPlayer.play("level $levelNo", speedFactor)
+    }
+
+    private fun clear() {
+        winning = false
+        paused = false
+        blackBlocks.clear()
+        highBlackBlocks.clear()
+        fruits.clear()
+        monsters.clear()
+        apples.clear()
     }
 
     private fun getFreeCells(): List<IntPoint> {
@@ -154,9 +173,9 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         apples.removeAll(apples.filter { it.dead })
 
         if (fruits.isEmpty() && !winning) {
-                winning = true
+            winning = true
             paused = true
-            schedule(3f, { game.restartLevel(true) })
+            schedule(3f, { startLevel(true) })
         }
     }
 
@@ -170,49 +189,46 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     }
 
 
-    override fun render(deltaTime: Float) {
-        ui.act(deltaTime)
-        update(deltaTime)
-
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT)
+    override fun render(delta: Float) {
+        ui.act(delta)
+        update(delta)
+        // TODO can be put in startLevel or init?
         val batch = game.batch
         batch.projectionMatrix = viewport.camera.combined
-
         batch.shader = shader
-        shader.begin()
-        val color = if (winning) blinkColors[blinkIndex++] else Color.BLACK
-        if (blinkIndex == blinkColors.size) blinkIndex = 0
-        shader.setUniformf("u_color", color)
-        shader.end()
-
-        batch.begin()
-        batch.disableBlending()
-
-        // Header
-        batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT-1)
-        // Background
-        TiledDrawable(bg).draw(batch, 0F, 0F, GAME_WIDTH, GAME_HEIGHT - HEADER_HEIGHT - 1)
-
-        // Black paths
-        for (blackBlock in blackBlocks) {
-            val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
-            val gridPos = grid2Pos(blackBlock)
-            batch.draw(tex, gridPos.x, gridPos.y)
+        shader.use {
+            val color = if (winning) blinkColors[blinkIndex++] else Color.BLACK
+            if (blinkIndex == blinkColors.size) blinkIndex = 0
+            shader.setUniformf("u_color", color)
         }
 
-        // Monster gate
-        val gridPos = grid2Pos(gatePos)
-        batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)
+        batch.use {
+            batch.disableBlending()
 
-        monsters.forEach { it.render(batch) }
-        fruits.forEach { it.render(batch) }
-        apples.forEach { it.render(batch) }
-        frank.render(batch)
+            // Header
+            batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+            // Background
+            TiledDrawable(backgrounds[levelNo - 1]).draw(batch, 0F, 0F, GAME_WIDTH, GAME_HEIGHT - HEADER_HEIGHT - 1)
 
-        balls.forEach { it.render(batch) }
-        explodeAnims.forEach { it.render(batch) }
+            // Black paths
+            for (blackBlock in blackBlocks) {
+                val tex = if (blackBlock in highBlackBlocks) blackHighTex else blackTex
+                val gridPos = grid2Pos(blackBlock)
+                batch.draw(tex, gridPos.x, gridPos.y)
+            }
 
-        batch.end()
+            // Monster gate
+            val gridPos = grid2Pos(gatePos)
+            batch.draw(gate.getKeyFrame(stateTime), gridPos.x, gridPos.y)
+
+            monsters.forEach { it.render(batch) }
+            fruits.forEach { it.render(batch) }
+            apples.forEach { it.render(batch) }
+            frank.render(batch)
+
+            balls.forEach { it.render(batch) }
+            explodeAnims.forEach { it.render(batch) }
+        }
         if (batch.renderCalls > 1) {
             Gdx.app.log("", "GPU access: ${batch.renderCalls}")
         }
@@ -220,10 +236,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     }
 
     fun getInputDirection(): Direction {
-        if (ui.leftBt.isPressed) return LEFT
-        if (ui.rightBt.isPressed) return RIGHT
-        if (ui.upBt.isPressed) return UP
-        if (ui.downBt.isPressed) return DOWN
+        ui.getDirection()?.let { return it }
 
         fun isKeyPressed(vararg keys: Int) = keys.any { Gdx.input.isKeyPressed(it) }
         return when {
@@ -332,6 +345,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     fun freeHighBlocks() = highBlackBlocks - apples.map { it.gridPos }
 }
 
+// TODO move the following to its own file
 
 typealias AnimationMap = Map<Direction, Animation<out AtlasRegion>>
 

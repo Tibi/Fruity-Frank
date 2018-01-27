@@ -6,23 +6,23 @@ import com.badlogic.gdx.InputAdapter
 import com.badlogic.gdx.input.GestureDetector
 
 /** Moves Frank with your finger. */
-class FrankGestureListener(val level: Level) : GestureDetector.GestureAdapter() {
+class FrankGestureListener(val gameScreen: GameScreen) : GestureDetector.GestureAdapter() {
 
     override fun tap(x: Float, y: Float, count: Int, button: Int): Boolean {
-        level.frank.throwBall()
+        gameScreen.frank.throwBall()
         return true
     }
 }
 
 
-class FruityInput(private val level: Level) : InputAdapter() {
+class FruityInput(private val gameScreen: GameScreen) : InputAdapter() {
 
     override fun keyDown(keycode: Int): Boolean {
         when (keycode) {
-            RIGHT_BRACKET, Input.Keys.SPACE -> level.frank.throwBall()
-            ESCAPE -> level.game.restartLevel()
-            P -> level.paused  = ! level.paused
-            N -> if (level.debug) level.game.restartLevel(true)
+            RIGHT_BRACKET, Input.Keys.SPACE -> gameScreen.frank.throwBall()
+            ESCAPE -> gameScreen.startLevel()
+            P -> gameScreen.paused  = ! gameScreen.paused
+            N -> if (gameScreen.debug) gameScreen.startLevel(true)
         }
         return true
     }

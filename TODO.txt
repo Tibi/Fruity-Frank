@@ -1,5 +1,6 @@
- - ktx-app:  KtxGame, KtxScreen, "use" around batch and shader calls
  - ktx-async use it to load assets
+ - try to put the <- and -> buttons at the bottom
+ - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
  - 3 lives then game over
  - sound
  - add a small probability for monsters to reverse dir
@@ -21,7 +22,6 @@
  - other screens: intro, high scores, etc..
  - bonus and fraise monsters
  - kdx: use ashley?
- - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
  - proguard?
  - icon
  - publish to Google Play?

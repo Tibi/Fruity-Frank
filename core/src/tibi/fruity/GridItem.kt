@@ -8,7 +8,7 @@ import tibi.fruity.Direction.*
 val gridItemSize = Vector2(CELL_WIDTH, CELL_HEIGHT - LOW_CELL_CEILING)
 
 /** A game object that can move along the grid. */
-abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor: Float) {
+abstract class GridItem(val gameScreen: GameScreen, var gridPos: IntPoint, var speedFactor: Float) {
 
     var pos = grid2Pos(gridPos)
     var targetGridPos = gridPos
@@ -47,7 +47,7 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
     }
 
     private fun setSpeed() {
-        val newSpeed = level.speed * speedFactor
+        val newSpeed = gameScreen.speed * speedFactor
         speed = when (direction) {
             RIGHT -> Vector2(newSpeed, 0f)
             UP    -> Vector2(0f, newSpeed)
@@ -87,17 +87,17 @@ abstract class GridItem(val level: Level, var gridPos: IntPoint, var speedFactor
     protected fun renderDigging(batch: SpriteBatch) {
         if (direction == UP) {
             val yUp = grid2Pos(gridPos).y + CELL_HEIGHT - 5
-            if (pos.y > yUp) batch.draw(level.blackTex, pos.x, yUp)
+            if (pos.y > yUp) batch.draw(gameScreen.blackTex, pos.x, yUp)
         } else if (direction == DOWN) {
             val yDown = grid2Pos(targetGridPos).y + 5
-            if (pos.y < yDown) batch.draw(level.blackTex, pos.x, yDown)
+            if (pos.y < yDown) batch.draw(gameScreen.blackTex, pos.x, yDown)
         }
     }
 }
 
 
-open class Fruit(level: Level, val textureRegion: TextureRegion, pos: IntPoint, val score: Int)
-    : GridItem(level, pos, 0f) {
+open class Fruit(gameScreen: GameScreen, val textureRegion: TextureRegion, pos: IntPoint, val score: Int)
+    : GridItem(gameScreen, pos, 0f) {
 
     override fun getNewDirection() = NONE
 

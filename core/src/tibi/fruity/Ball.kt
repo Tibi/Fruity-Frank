@@ -8,11 +8,11 @@ import tibi.fruity.Direction.*
 import kotlin.math.abs
 
 /** The ball frank throws. */
-class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: Direction) {
+class Ball(val gameScreen: GameScreen, val tex: AtlasRegion, frankPos: Vector2, frankDir: Direction) {
 
     val size = Vector2(tex.originalWidth.toFloat(), tex.originalHeight.toFloat())
     val pos = startPos(frankPos, frankDir)
-    val speed = startSpeed(frankDir) * level.speed
+    val speed = startSpeed(frankDir) * gameScreen.speed
     var beingThrown = true
     var dead = false
 
@@ -56,7 +56,7 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
                 continue  // wrong border
             }
             pos.set(intersection)
-            if (level.hasWall(gpos, wallDir)) {
+            if (gameScreen.hasWall(gpos, wallDir)) {
                 bringInCell(pos, gpos)
                 restorePosFromCorner()
                 speed.set(reboundSpeed(wallDir))
@@ -129,17 +129,17 @@ class Ball(val level: Level, val tex: AtlasRegion, frankPos: Vector2, frankDir: 
 
     private fun detectCollisions() {
         // Kill monsters
-        level.monsters.firstOrNull { collides(it) }?.let {
-            level.killMonster(it)
+        gameScreen.monsters.firstOrNull { collides(it) }?.let {
+            gameScreen.killMonster(it)
             dead = true
         }
         // Let Frank catch the ball
-        if (!beingThrown && collides(level.frank)) {
-            level.frank.catchBall()
+        if (!beingThrown && collides(gameScreen.frank)) {
+            gameScreen.frank.catchBall()
             dead = true
         }
         // Gate catches the ball
-        if (collides(level.gatePos)) {
+        if (collides(gameScreen.gatePos)) {
             dead = true
         }
     }

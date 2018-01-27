@@ -6,28 +6,26 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.viewport.Viewport
+import tibi.fruity.Direction.*
 
 /**
  * Four buttons to move Frank
  *
  * @author YCHT
  */
-class FrankUI(level: Level, viewport: Viewport) : Stage(viewport) {
+class FrankUI(gameScreen: GameScreen, viewport: Viewport) : Stage(viewport) {
 
-    val leftTex = level.game.atlas.findRegion("UI/keys/left_key")
-    val leftBt = ImageButton(TextureRegionDrawable(leftTex))
+    private val leftTex = gameScreen.game.atlas.findRegion("UI/keys/left_key")
+    private val rightTex = gameScreen.game.atlas.findRegion("UI/keys/right_key")
+    private val upTex = gameScreen.game.atlas.findRegion("UI/keys/up_key")
+    private val downTex = gameScreen.game.atlas.findRegion("UI/keys/down_key")
+    private val throwTex = gameScreen.game.atlas.findRegion("UI/keys/]_key")
 
-    val rightTex = level.game.atlas.findRegion("UI/keys/right_key")
-    val rightBt = ImageButton(TextureRegionDrawable(rightTex))
-    
-    val upTex = level.game.atlas.findRegion("UI/keys/up_key")
-    val upBt = ImageButton(TextureRegionDrawable(upTex))
-
-    val downTex = level.game.atlas.findRegion("UI/keys/down_key")
-    val downBt = ImageButton(TextureRegionDrawable(downTex))
-
-    val throwTex = level.game.atlas.findRegion("UI/keys/]_key")
-    val throwBt = ImageButton(TextureRegionDrawable(throwTex))
+    private val leftBt = ImageButton(TextureRegionDrawable(leftTex))
+    private val rightBt = ImageButton(TextureRegionDrawable(rightTex))
+    private val upBt = ImageButton(TextureRegionDrawable(upTex))
+    private val downBt = ImageButton(TextureRegionDrawable(downTex))
+    private val throwBt = ImageButton(TextureRegionDrawable(throwTex))
 
     init {
 
@@ -58,10 +56,18 @@ class FrankUI(level: Level, viewport: Viewport) : Stage(viewport) {
 
         throwBt.addListener(object : InputListener() {
             override fun touchDown(event: InputEvent?, x: Float, y: Float, pointer: Int, button: Int): Boolean {
-                level.frank.throwBall()
+                gameScreen.frank.throwBall()
                 return true
             }
         })
+    }
+
+    fun getDirection() = when {
+        leftBt.isPressed -> LEFT
+        rightBt.isPressed -> RIGHT
+        upBt.isPressed -> UP
+        downBt.isPressed -> DOWN
+        else -> null
     }
 
 }

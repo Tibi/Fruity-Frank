@@ -9,8 +9,8 @@ import tibi.fruity.Direction.NONE
 
 
 /** An animated GridItem. */
-abstract class Perso(level: Level, var anims: AnimationMap, pos: IntPoint, speedFactor: Float)
-    : GridItem(level, pos, speedFactor) {
+abstract class Perso(gameScreen: GameScreen, var anims: AnimationMap, pos: IntPoint, speedFactor: Float)
+    : GridItem(gameScreen, pos, speedFactor) {
 
     var stateTime: Float = 0f
 
@@ -30,11 +30,11 @@ abstract class Perso(level: Level, var anims: AnimationMap, pos: IntPoint, speed
 
 enum class MonsterType { GUY, PRUNE, FRAISE, BONUS }
 
-class Monster(level: Level, val type: MonsterType, anims: AnimationMap, pos: IntPoint, speedFactor: Float)
-    : Perso(level, anims, pos, speedFactor) {
+class Monster(gameScreen: GameScreen, val type: MonsterType, anims: AnimationMap, pos: IntPoint, speedFactor: Float)
+    : Perso(gameScreen, anims, pos, speedFactor) {
 
     override fun getNewDirection(): Direction {
-        val onPath = level.getDirectionsOnPath(gridPos)
+        val onPath = gameScreen.getDirectionsOnPath(gridPos)
         if (onPath.isEmpty()) return NONE
         if (onPath.size == 1) return onPath.first()
         // > 70% chances to keep same direction
@@ -44,16 +44,16 @@ class Monster(level: Level, val type: MonsterType, anims: AnimationMap, pos: Int
     }
 
     override fun detectCollision(newPos: Vector2): Vector2 {
-        val monsterCollision = level.monsters.any { it != this && it.collides(newPos) }
+        val monsterCollision = gameScreen.monsters.any { it != this && it.collides(newPos) }
         // There's an apple being pushed at our target position
-        val appleCollision: Boolean by lazy { level.apples.any { it.collides(grid2Pos(targetGridPos)) }}
+        val appleCollision: Boolean by lazy { gameScreen.apples.any { it.collides(grid2Pos(targetGridPos)) }}
         if (monsterCollision || appleCollision) {
             direction = direction.reverse()
             targetGridPos += direction
             return pos
         }
-        if (level.frank.collides(this)) {
-            level.killFrank()
+        if (gameScreen.frank.collides(this)) {
+            gameScreen.killFrank()
         }
         return newPos
     }
@@ -61,8 +61,8 @@ class Monster(level: Level, val type: MonsterType, anims: AnimationMap, pos: Int
 
 
 /** The Hero! */
-class Frank(level: Level, atlas: TextureAtlas)
-    : Perso(level, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
+class Frank(gameScreen: GameScreen, atlas: TextureAtlas)
+    : Perso(gameScreen, createAnimations(atlas, "frank/ball "), IntPoint(0, 0), 1f) {
 
     var numBalls = NUM_BALLS
         set(value) {
@@ -74,25 +74,25 @@ class Frank(level: Level, atlas: TextureAtlas)
     val ballTex: AtlasRegion = atlas.findRegion("frank/ball")
 
     override fun getNewDirection(): Direction {
-        val dir = level.getInputDirection()
-        if (level.isOut(gridPos + dir)) {
+        val dir = gameScreen.getInputDirection()
+        if (gameScreen.isOut(gridPos + dir)) {
             return NONE
         }
-        val fruit = level.fruitAt(gridPos + dir)
+        val fruit = gameScreen.fruitAt(gridPos + dir)
         when (fruit) {
             is Apple -> if (!fruit.push(dir)) return NONE
-            is Fruit -> level.eat(fruit)
+            is Fruit -> gameScreen.eat(fruit)
         }
         return dir
     }
 
     override fun dig(pos: IntPoint, direction: Direction) {
-        level.dig(pos, direction)
+        gameScreen.dig(pos, direction)
     }
 
     fun throwBall() {
         if (numBalls == 0) return
-        if (!level.addBall(Ball(level, ballTex, pos, lastDir))) return
+        if (!gameScreen.addBall(Ball(gameScreen, ballTex, pos, lastDir))) return
         numBalls--
     }
 

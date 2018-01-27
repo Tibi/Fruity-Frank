@@ -8,18 +8,18 @@ import tibi.fruity.Apple.AppleState.*
 
 const val FALL_HEIGHT_BEFORE_CRASH = 3  // in cells
 
-class Apple(level: Level, pos: IntPoint)
-    : Fruit(level, level.appleTex, pos, 0) {
+class Apple(gameScreen: GameScreen, pos: IntPoint)
+    : Fruit(gameScreen, gameScreen.appleTex, pos, 0) {
 
     enum class AppleState { IDLE, PUSHED, FALLING_SLOW, FALLING_FAST, CRASHING }
 
     private var state = IDLE
         set(value) {
             speedFactor = when (value) {
-                FALLING_SLOW -> 0.038f
+                FALLING_SLOW -> 0.037f
                 else -> 1.0f
             }
-            anim = if (value == CRASHING) level.appleCrashAnim else null
+            anim = if (value == CRASHING) gameScreen.appleCrashAnim else null
             if (field != FALLING_FAST && value == FALLING_FAST) fastFallStart = gridPos.y
             field = value
         }
@@ -47,8 +47,8 @@ class Apple(level: Level, pos: IntPoint)
             state = IDLE
         }
         val below = gridPos.plus(0, -1)
-        val canFall = below in level.blackBlocks && level.fruitAt(below) == null
-        val canFallFast = below in level.freeHighBlocks()
+        val canFall = below in gameScreen.blackBlocks && gameScreen.fruitAt(below) == null
+        val canFallFast = below in gameScreen.freeHighBlocks()
         if (!isFalling()) {
             if (canFall && state != CRASHING) {
                 state = if (canFallFast) FALLING_FAST else FALLING_SLOW
@@ -69,7 +69,7 @@ class Apple(level: Level, pos: IntPoint)
     }
 
     override fun dig(pos: IntPoint, direction: Direction) {
-        if (state != IDLE) level.dig(pos, direction)
+        if (state != IDLE) gameScreen.dig(pos, direction)
     }
 
     fun push(dir: Direction): Boolean {
@@ -77,7 +77,7 @@ class Apple(level: Level, pos: IntPoint)
             return false
         }
         val newPos = gridPos + dir
-        if (level.isOut(newPos) || level.fruitAt(newPos) != null || level.monsterAt(newPos) != null ) {
+        if (gameScreen.isOut(newPos) || gameScreen.fruitAt(newPos) != null || gameScreen.monsterAt(newPos) != null ) {
             return false
         }
         state = PUSHED
@@ -87,9 +87,9 @@ class Apple(level: Level, pos: IntPoint)
 
     override fun detectCollision(newPos: Vector2): Vector2 {
         if (isFalling()) {
-            level.monsters.toList().filter { collides(it) }.forEach { level.killMonster(it) }
-            if (collides(level.frank)) {
-                level.killFrank()
+            gameScreen.monsters.toList().filter { collides(it) }.forEach { gameScreen.killMonster(it) }
+            if (collides(gameScreen.frank)) {
+                gameScreen.killFrank()
             }
         }
         return newPos

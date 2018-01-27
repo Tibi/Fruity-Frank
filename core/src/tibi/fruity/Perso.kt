@@ -94,12 +94,10 @@ class Frank(level: Level, atlas: TextureAtlas)
         if (numBalls == 0) return
         if (!level.addBall(Ball(level, ballTex, pos, lastDir))) return
         numBalls--
-        println(numBalls)
     }
 
     fun catchBall() {
         if (numBalls < NUM_BALLS) numBalls++
-        println(numBalls)
     }
 
     fun regainBalls() {

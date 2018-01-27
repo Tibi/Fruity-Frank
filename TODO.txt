@@ -1,4 +1,4 @@
-  - wait 7 seconds before respawning dead monster or regaining ball
+ - explode anim when apple kills monster
  - ktx-app:  KtxGame, KtxScreen, "use" around batch and shader calls
  - ktx-async use it to load assets
  - 3 lives then game over

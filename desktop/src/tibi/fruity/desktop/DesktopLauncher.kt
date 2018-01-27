@@ -4,9 +4,9 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration
 import tibi.fruity.FruityFrankGame
+import tibi.fruity.GAME_HEIGHT
+import tibi.fruity.GAME_WIDTH
 import tibi.fruity.MusicPlayer
-import tibi.fruity.SCREEN_HEIGHT
-import tibi.fruity.SCREEN_WIDTH
 import javax.sound.midi.MidiSystem
 import javax.sound.midi.Sequencer
 
@@ -14,8 +14,8 @@ object DesktopLauncher {
     
     @JvmStatic fun main(arg: Array<String>) {
         val config = LwjglApplicationConfiguration()
-        config.width = SCREEN_WIDTH.toInt()
-        config.height = SCREEN_HEIGHT.toInt()
+        config.width = GAME_WIDTH.toInt()
+        config.height = GAME_HEIGHT.toInt()
         LwjglApplication(FruityFrankGame(MusicPlayerDesktop()), config)
     }
 

@@ -87,7 +87,7 @@ class Apple(level: Level, pos: IntPoint)
 
     override fun detectCollision(newPos: Vector2): Vector2 {
         if (isFalling()) {
-            level.monsters.removeAll(level.monsters.filter { collides(it) })
+            level.monsters.toList().filter { collides(it) }.forEach { level.killMonster(it) }
             if (collides(level.frank)) {
                 level.killFrank()
             }

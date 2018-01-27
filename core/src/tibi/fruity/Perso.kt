@@ -28,8 +28,9 @@ abstract class Perso(level: Level, var anims: AnimationMap, pos: IntPoint, speed
     }
 }
 
+enum class MonsterType { GUY, PRUNE, FRAISE, BONUS }
 
-open class Monster(level: Level, anims: AnimationMap, pos: IntPoint, speedFactor: Float)
+class Monster(level: Level, val type: MonsterType, anims: AnimationMap, pos: IntPoint, speedFactor: Float)
     : Perso(level, anims, pos, speedFactor) {
 
     override fun getNewDirection(): Direction {

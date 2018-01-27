@@ -22,6 +22,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.StretchViewport
 import tibi.fruity.Direction.*
+import tibi.fruity.MonsterType.GUY
+import tibi.fruity.MonsterType.PRUNE
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
@@ -55,8 +57,8 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
 
     var paused = false
         set(value) { game.musicPlayer.pause(value); field = value }
-    var speedFactor = 1.0f
-    val speed: Float get() = 80f * speedFactor
+    var speedFactor = 1.0f + levelNo / 8f
+    val speed: Float get() = 90f * speedFactor
     private var score: Int = 0
 
     private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
@@ -70,6 +72,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
     val debug = true
 
     init {
+        Gdx.app.log("", "Starting level $levelNo")
         if (isAndroid) {
             (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
             viewport.camera.position.x -= 200f
@@ -84,16 +87,19 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         drawBlackCross(gatePos)
         frank.putAt(gatePos.copy(y = 0))
 
+        val randPoints = getFreeCells()
+        var pointIndex = 0
+
+        // Creates 20 fruits to eat
         val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
             game.atlas.findRegion("fruits/" + it)
         }
-        val randPoints = getRandomFreePoints()
-        var pointIndex = 0
-        for (i in 0..13) {
+        for (i in 1..20) {
             val textureIndex = randomTriangular(0f, levelNo.toFloat(), 0f).toInt()
             fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints[pointIndex++], 10))
         }
-        for (i in 0..10) {
+        // Creates 10 apples to push
+        for (i in 1..10) {
             var point: IntPoint
             do {
                 point = randPoints[pointIndex++]
@@ -105,7 +111,7 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
         game.musicPlayer.play("level $levelNo", speedFactor)
     }
 
-    private fun getRandomFreePoints(): List<IntPoint> {
+    private fun getFreeCells(): List<IntPoint> {
         val allPoints = ArrayList<IntPoint>()
         (0 until GRID_WIDTH).forEach { x -> (0 until GRID_HEIGHT).forEach { y -> allPoints.add(IntPoint(x, y)) } }
         allPoints.removeAll(blackBlocks)
@@ -247,16 +253,18 @@ class Level(val levelNo: Int, val game: FruityFrankGame) : Screen {
 
     /** Returns whether a monster could be spawned. */
     private fun spawnMonster(): Boolean {
-        if (monsters.size > 3 + levelNo) {
+        val maxNumPrunes = ceil(levelNo / 2f)
+        val maxNumGuys = levelNo + 1
+        if (monsters.size >= maxNumGuys + maxNumPrunes) {
             return false
         }
         if (monsters.any { it.collides(grid2Pos(gatePos)) }) {
             return false
         }
-        val monster = if (randomBoolean()) {
-            Monster(this, createAnimations(game.atlas, "guy/"), gatePos, 0.7f)
+        val monster = if (monsters.count { it.type == GUY } < maxNumGuys) {
+            Monster(this, GUY, createAnimations(game.atlas, "guy/"), gatePos, 0.7f)
         } else {
-            Monster(this, createAnimations(game.atlas, "prune/"), gatePos, 1f)
+            Monster(this, PRUNE, createAnimations(game.atlas, "prune/"), gatePos, 1f)
         }
         monsters.add(monster)
         monster.move(Direction.values()[random(1, 4)])

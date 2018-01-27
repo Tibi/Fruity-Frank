@@ -1,10 +1,4 @@
- - next level when all fruits eaten
-   * blink background by color rotation DONE
-   * next music DONE
-   * next background DONE
-   * add monsters
-   * add fruits DONE
-   * faster
+  - wait 7 seconds before respawning dead monster or regaining ball
  - ktx-app:  KtxGame, KtxScreen, "use" around batch and shader calls
  - ktx-async use it to load assets
  - 3 lives then game over

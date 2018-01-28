@@ -29,29 +29,32 @@ class FrankUI(gameScreen: GameScreen, viewport: Viewport) : Stage(viewport) {
 
     init {
 
-        leftBt.width = 100f
-        leftBt.height = 200f
-        leftBt.setPosition(-200f, 0f)
+        val margin = 25
+
+        leftBt.width = KEY_BUTTON_SIZE
+        leftBt.height = KEY_BUTTON_SIZE
+        leftBt.setPosition(0f, - KEY_BUTTON_SIZE)
         addActor(leftBt)
 
-        rightBt.width = 100f
-        rightBt.height = 200f
-        rightBt.setPosition(-100f, 0f)
+        rightBt.width = KEY_BUTTON_SIZE
+        rightBt.height = KEY_BUTTON_SIZE
+        rightBt.setPosition(KEY_BUTTON_SIZE + margin, - KEY_BUTTON_SIZE)
         addActor(rightBt)
 
-        upBt.width = 100f
-        upBt.height = 100f
-        upBt.setPosition(GAME_WIDTH, 100f)
-        addActor(upBt)
-
-        downBt.width = 100f
-        downBt.height = 100f
+        downBt.width = KEY_BUTTON_SIZE
+        downBt.height = KEY_BUTTON_SIZE
         downBt.setPosition(GAME_WIDTH, 0f)
         addActor(downBt)
 
-        throwBt.width = 100f
-        throwBt.height = 100f
-        throwBt.setPosition(GAME_WIDTH, 250f)
+        upBt.width = KEY_BUTTON_SIZE
+        upBt.height = KEY_BUTTON_SIZE
+        upBt.setPosition(GAME_WIDTH, KEY_BUTTON_SIZE + margin)
+        addActor(upBt)
+
+
+        throwBt.width = KEY_BUTTON_SIZE
+        throwBt.height = KEY_BUTTON_SIZE
+        throwBt.setPosition(GAME_WIDTH, 2.5f * KEY_BUTTON_SIZE)
         addActor(throwBt)
 
         throwBt.addListener(object : InputListener() {

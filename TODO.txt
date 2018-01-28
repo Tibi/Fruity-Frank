@@ -1,6 +1,6 @@
- - ktx-async use it to load assets
- - try to put the <- and -> buttons at the bottom
+ - fix shader on Android
  - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
+ - ktx-async use it to load assets
  - 3 lives then game over
  - sound
  - add a small probability for monsters to reverse dir

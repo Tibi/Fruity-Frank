@@ -1,6 +1,5 @@
 package tibi.fruity
 
-import com.badlogic.gdx.Application
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.InputMultiplexer
@@ -30,14 +29,14 @@ import com.badlogic.gdx.utils.Array as GdxArray
 
 class GameScreen(val game: FruityFrankGame) : KtxScreen {
 
-    var levelNo = 1
+    private var levelNo = 1
     val frank = Frank(this, game.atlas)
-    val fruits = mutableListOf<Fruit>()
+    private val fruits = mutableListOf<Fruit>()
     val apples = mutableListOf<Apple>()
     val monsters = mutableListOf<Monster>()
-    val balls = mutableListOf<Ball>()
+    private val balls = mutableListOf<Ball>()
     val blackBlocks = mutableSetOf<IntPoint>()
-    val highBlackBlocks = mutableSetOf<IntPoint>()
+    private val highBlackBlocks = mutableSetOf<IntPoint>()
 
     private val backgrounds = (1..7).map { game.atlas.findRegion("backgrounds/level$it").also {
         it.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
@@ -45,15 +44,15 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
     private val header = game.atlas.findRegion("backgrounds/header")
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
-    val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
+    private val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
         game.atlas.findRegion("fruits/" + it)
     }
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
     val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
-    val whiteSquareTex: AtlasRegion = game.atlas.findRegion("backgrounds/white_square")
-    var explodeAnims = mutableListOf<ExplodeAnim>()
+    private val whiteSquareTex: AtlasRegion = game.atlas.findRegion("backgrounds/white_square")
+    private var explodeAnims = mutableListOf<ExplodeAnim>()
     private var isRegainingBall = false
 
     private var stateTime = 0f
@@ -65,24 +64,24 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
 
     var paused = false
         set(value) { game.musicPlayer.pause(value); field = value }
-    var speedFactor = 1.0f
+    private var speedFactor = 1.0f
     val speed: Float get() = 90f * speedFactor
     private var score: Int = 0
 
-    private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
+    private val isAndroid = true//Gdx.app.type == Application.ApplicationType.Android
     private val viewport = if (isAndroid) StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
                            else FitViewport(GAME_WIDTH, GAME_HEIGHT)
-    val ui = FrankUI(this, viewport)
-    val input = FruityInput(this)
-    val gestureListener = FrankGestureListener(this)
-    val shader = ShaderProgram(Gdx.files.internal("passthrough.vsh"), Gdx.files.internal("cycle_black.fsh"))
+    private val ui = FrankUI(this, viewport)
+    private val input = FruityInput(this)
+    private val gestureListener = FrankGestureListener(this)
+    private val shader = ShaderProgram(Gdx.files.internal("passthrough.vsh"), Gdx.files.internal("cycle_black.fsh"))
 
     val debug = true
 
     init {
         if (isAndroid) {
             (viewport.camera as OrthographicCamera).setToOrtho(false, SCREEN_WIDTH, SCREEN_HEIGHT)
-            viewport.camera.position.x -= 200f
+            viewport.camera.position.y -= KEY_BUTTON_SIZE
             viewport.camera.update()
         }
         ShaderProgram.pedantic = false
@@ -195,18 +194,18 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         // TODO can be put in startLevel or init?
         val batch = game.batch
         batch.projectionMatrix = viewport.camera.combined
-        batch.shader = shader
-        shader.use {
-            val color = if (winning) blinkColors[blinkIndex++] else Color.BLACK
-            if (blinkIndex == blinkColors.size) blinkIndex = 0
-            shader.setUniformf("u_color", color)
-        }
+//        batch.shader = shader
+//        shader.use {
+//            val color = if (winning) blinkColors[blinkIndex++] else Color.BLACK
+//            if (blinkIndex == blinkColors.size) blinkIndex = 0
+//            shader.setUniformf("u_color", color)
+//        }
 
         batch.use {
             batch.disableBlending()
 
             // Header
-            batch.draw(header, 0F, SCREEN_HEIGHT - HEADER_HEIGHT - 1)
+            batch.draw(header, 0F, GAME_HEIGHT - HEADER_HEIGHT - 1)
             // Background
             TiledDrawable(backgrounds[levelNo - 1]).draw(batch, 0F, 0F, GAME_WIDTH, GAME_HEIGHT - HEADER_HEIGHT - 1)
 
@@ -361,9 +360,9 @@ fun createAnimations(atlas: TextureAtlas, name: String): AnimationMap {
 }
 
 
-class ExplodeAnim(val source: GridItem, val tex: TextureRegion, val color: Color, val isExplosion: Boolean = true) {
+class ExplodeAnim(private val source: GridItem, private val tex: TextureRegion, private val color: Color, private val isExplosion: Boolean = true) {
 
-    var dist = if (isExplosion) 0f else GAME_HEIGHT
+    private var dist = if (isExplosion) 0f else GAME_HEIGHT
 
     var whenFinished: () -> Unit = {}
     var finished = false

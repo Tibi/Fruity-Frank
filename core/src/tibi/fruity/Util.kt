@@ -8,8 +8,9 @@ import tibi.fruity.Direction.*
 const val NUM_LEVELS = 7
 const val GAME_WIDTH = 649f
 const val GAME_HEIGHT = 378f
-const val SCREEN_WIDTH = GAME_WIDTH + 300f
-const val SCREEN_HEIGHT = GAME_HEIGHT
+const val KEY_BUTTON_SIZE = 100f
+const val SCREEN_WIDTH = GAME_WIDTH + KEY_BUTTON_SIZE
+const val SCREEN_HEIGHT = GAME_HEIGHT + KEY_BUTTON_SIZE
 
 const val HEADER_HEIGHT = 28f
 

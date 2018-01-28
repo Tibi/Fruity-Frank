@@ -22,7 +22,6 @@ buildscript {
 
 
 allprojects {
-    apply plugin: "eclipse"
     apply plugin: "idea"
 
     version = '1.0'
@@ -35,7 +34,7 @@ allprojects {
 }
 
 project(":desktop") {
-    apply plugin: "java"
+    apply plugin: "kotlin"
 
 
     dependencies {
@@ -48,6 +47,7 @@ project(":desktop") {
 
 project(":android") {
     apply plugin: "android"
+    apply plugin: "kotlin-android"
 
     configurations { natives }
 
@@ -62,7 +62,6 @@ project(":android") {
 
 
 project(":core") {
-    apply plugin: "java"
     apply plugin: "kotlin"
 
     dependencies {

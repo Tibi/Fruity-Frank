@@ -13,7 +13,7 @@ class AndroidLauncher : AndroidApplication() {
 
     private val player = MusicPlayerAndroid()
 
-    override fun onCreate(savedInstanceState: Bundle) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val config = AndroidApplicationConfiguration()
         config.useAccelerometer = false
@@ -24,24 +24,40 @@ class AndroidLauncher : AndroidApplication() {
 
     override fun onPause() {
         super.onPause()
-        player.release()
+        player.pause(true)
+    }
+
+    override fun onResume() {
+        super.onResume()
+        player.pause(false)
     }
 
     inner class MusicPlayerAndroid : MusicPlayer {
 
         private var mplayer: MediaPlayer? = null
+        var fileNamePrefix: String? = null
+        var speedFactor: Float? = null
 
         override fun play(fileNamePrefix: String, speedFactor: Float) {
+            this.fileNamePrefix = fileNamePrefix
+            this.speedFactor = speedFactor
+            release()
+            start()
+        }
+
+        private fun start() {
             try {
-                release()
+                if (fileNamePrefix == null) {
+                    return
+                }
                 val player = MediaPlayer()
-                val file = findFile(fileNamePrefix) as AndroidFileHandle
+                val file = findFile(fileNamePrefix!!) as AndroidFileHandle
                 val descriptor = file.assetFileDescriptor
                 player.setDataSource(descriptor.fileDescriptor,
                         descriptor.startOffset, descriptor.length)
                 player.setAudioStreamType(AudioManager.STREAM_MUSIC)
                 val params = PlaybackParams()
-                params.speed = speedFactor
+                params.speed = speedFactor!!
                 player.playbackParams = params
                 player.isLooping = true
                 player.prepare()
@@ -55,13 +71,15 @@ class AndroidLauncher : AndroidApplication() {
 
         override fun pause(value: Boolean) {
             if (value) mplayer?.pause()
-            else mplayer?.start()
+            else {
+                if (mplayer == null) start()
+                else mplayer?.start()
+            }
         }
 
         override fun release() {
-            if (mplayer != null) {
-                mplayer!!.release()
-            }
+            mplayer?.release()
+            mplayer = null
         }
     }
 }

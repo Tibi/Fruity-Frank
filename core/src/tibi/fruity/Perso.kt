@@ -72,6 +72,11 @@ class Frank(gameScreen: GameScreen, atlas: TextureAtlas)
     val animsWithBall = anims
     val animsNoBall = createAnimations(atlas, "frank/")
     val ballTex: AtlasRegion = atlas.findRegion("frank/ball")
+    var isDead = false
+
+    override fun update(deltaTime: Float) {
+        if (!isDead) super.update(deltaTime)
+    }
 
     override fun getNewDirection(): Direction {
         val dir = gameScreen.getInputDirection()

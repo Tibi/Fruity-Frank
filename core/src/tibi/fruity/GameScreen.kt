@@ -65,6 +65,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
     private var speedFactor = 1.0f
     val speed: Float get() = 90f * speedFactor
     private var score: Int = 0
+    private var livesLeft = 3
 
     private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
     private val viewport = if (isAndroid) StretchViewport(SCREEN_WIDTH, SCREEN_HEIGHT)
@@ -89,7 +90,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         startLevel()
     }
 
-    fun startLevel(next: Boolean = false) {
+    fun startLevel(next: Boolean = false, numFruits: Int = 20, numApples: Int = 10) {
         clear()
         if (next) {
             levelNo = if (levelNo < NUM_LEVELS) levelNo + 1 else 1
@@ -103,12 +104,12 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         var pointIndex = 0
 
         // Creates 20 fruits to eat
-        for (i in 1..20) {
+        for (i in 1..numFruits) {
             val textureIndex = randomTriangular(0f, levelNo.toFloat(), 0f).toInt()
             fruits.add(Fruit(this, fruitTextures[textureIndex], randPoints[pointIndex++], 10))
         }
         // Creates 10 apples to push
-        for (i in 1..10) {
+        for (i in 1..numApples) {
             var point: IntPoint
             do {
                 point = randPoints[pointIndex++]
@@ -120,6 +121,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
     }
 
     private fun clear() {
+        frank.isDead = false
         winning = false
         paused = false
         blackBlocks.clear()
@@ -156,12 +158,10 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         if (balls.isEmpty() && frank.numBalls == 0 && !isRegainingBall) {
             isRegainingBall = true
             schedule(7f) {
-                val anim = ExplodeAnim(frank, whiteSquareTex, Color.YELLOW, false)
-                explodeAnims.add(anim)
-                anim.whenFinished = {
+                explodeAnims.add(ExplodeAnim(frank, whiteSquareTex, Color.YELLOW, false) {
                     frank.regainBalls()
                     isRegainingBall = false
-                }
+                })
             }
         }
         frank.update(deltaTime)
@@ -177,7 +177,18 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
     }
 
     fun killFrank() {
-        explodeAnims.add(ExplodeAnim(frank, whiteSquareTex, Color.RED))
+        if (!frank.isDead) {
+            val anim = ExplodeAnim(frank, whiteSquareTex, Color.RED, true) {
+                if (livesLeft > 0) {
+                    startLevel(false, fruits.size, apples.size)
+                } else {
+                    game.gameOver()
+                }
+            }
+            explodeAnims.add(anim)
+            frank.isDead = true
+            livesLeft--
+        }
     }
 
     fun killMonster(monster: Monster) {

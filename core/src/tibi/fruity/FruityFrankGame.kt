@@ -25,6 +25,10 @@ class FruityFrankGame(val musicPlayer: MusicPlayer) : KtxGame<Screen>() {
         batch.dispose()
         atlas.dispose()
     }
+
+    fun gameOver() {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    }
 }
 
 const val MUSIC_DIR = "music"

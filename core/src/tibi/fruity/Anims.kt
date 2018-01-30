@@ -7,11 +7,11 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas
 import com.badlogic.gdx.graphics.g2d.TextureRegion
 import com.badlogic.gdx.utils.Array
 
-class ExplodeAnim(private val source: GridItem, private val tex: TextureRegion, private val color: Color, private val isExplosion: Boolean = true) {
+class ExplodeAnim(private val source: GridItem, private val tex: TextureRegion,
+                  private val color: Color, private val isExplosion: Boolean = true,
+                  val whenFinished: () -> Unit = {}) {
 
     private var dist = if (isExplosion) 0f else GAME_HEIGHT
-
-    var whenFinished: () -> Unit = {}
     var finished = false
 
     fun update(deltaTime: Float) {

@@ -18,7 +18,7 @@ class AndroidLauncher : AndroidApplication() {
         val config = AndroidApplicationConfiguration()
         config.useAccelerometer = false
         config.useCompass = false
-
+        config.useImmersiveMode = true
         initialize(FruityFrankGame(player), config)
     }
 

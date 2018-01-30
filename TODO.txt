@@ -1,4 +1,4 @@
- - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
+ - music in level 7 is too short
  - 3 lives then game over
  - sound
  - add a small probability for monsters to reverse dir

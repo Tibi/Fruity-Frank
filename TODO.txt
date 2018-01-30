@@ -3,6 +3,7 @@
  - sound
  - add a small probability for monsters to reverse dir
  - save game state
+ - anim when Frank dies: screen goes to black from the outside
  - monster should stop a bit when hitting a wall or another monster
  - make sure all fruits are accessible?
  - redo all screenshots,

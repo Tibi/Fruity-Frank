@@ -85,8 +85,10 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         }
         ShaderProgram.pedantic = false
         if (!shader.isCompiled) Gdx.app.log("", shader.log)
-        Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
+    }
 
+    override fun show() {
+        Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
         startLevel()
     }
 
@@ -256,11 +258,6 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         }
     }
 
-    override fun show() {}
-    override fun hide() {}
-    override fun pause() {}
-    override fun resume() {}
-    override fun dispose() {}
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height, false)
         ui.viewport.update(width, height)

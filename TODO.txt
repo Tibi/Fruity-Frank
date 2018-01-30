@@ -1,12 +1,9 @@
- - fix shader on Android
  - hide Android navigation bar? AndroidApplicationConfiguration.useImmersiveMode
- - ktx-async use it to load assets
  - 3 lives then game over
  - sound
  - add a small probability for monsters to reverse dir
  - save game state
  - monster should stop a bit when hitting a wall or another monster
- - sometimes Frank pushes through an apple when it is blocked by a monster
  - make sure all fruits are accessible?
  - redo all screenshots,
    * not using "ActiveX streching in WinAPE"...
@@ -20,7 +17,9 @@
  - machine gun mode
  - bitmap font for score
  - other screens: intro, high scores, etc..
+ - cycle colors of logo using cycle.frag and https://docs.gimp.org/en/gimp-image-convert-indexed.html
  - bonus and fraise monsters
+ - ktx-async use it to load assets
  - kdx: use ashley?
  - proguard?
  - icon

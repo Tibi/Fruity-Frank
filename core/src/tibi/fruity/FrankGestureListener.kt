@@ -20,9 +20,9 @@ class FruityInput(private val gameScreen: GameScreen) : InputAdapter() {
     override fun keyDown(keycode: Int): Boolean {
         when (keycode) {
             RIGHT_BRACKET, Input.Keys.SPACE -> gameScreen.frank.throwBall()
-            ESCAPE -> gameScreen.startLevel()
+            ESCAPE -> gameScreen.retryLevel()
             P -> gameScreen.paused  = ! gameScreen.paused
-            N -> if (gameScreen.debug) gameScreen.startLevel(true)
+            N -> if (gameScreen.debug) gameScreen.nextLevel()
         }
         return true
     }

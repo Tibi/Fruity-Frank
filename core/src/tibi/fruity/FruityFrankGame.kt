@@ -22,7 +22,7 @@ class FruityFrankGame(val musicPlayer: MusicPlayer) : KtxGame<Screen>() {
         addScreen(StartScreen(this))
         addScreen(GameScreen(this))
         addScreen(GameOverScreen(this))
-        setScreen<StartScreen>()
+        setScreen<GameOverScreen>()
     }
 
     override fun dispose() {

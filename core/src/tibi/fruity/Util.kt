@@ -71,3 +71,10 @@ inline fun schedule(
         task()
     }
 }, delaySeconds)!!
+
+/** Makes a text appear progressively. */
+fun textAppear(text: String, duration: Float, currentTime: Float): String {
+    if (currentTime > duration) return text
+    val pos = text.length / duration * currentTime
+    return text.substring(0..pos.toInt())
+}

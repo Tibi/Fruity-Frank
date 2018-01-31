@@ -92,11 +92,8 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         startLevel()
     }
 
-    fun startLevel(next: Boolean = false, numFruits: Int = 20, numApples: Int = 10) {
+    private fun startLevel(numFruits: Int = 20, numApples: Int = 10) {
         clear()
-        if (next) {
-            levelNo = if (levelNo < NUM_LEVELS) levelNo + 1 else 1
-        }
         speedFactor = 1.0f + levelNo / 8f
         Gdx.app.log("", "Starting level $levelNo")
         drawBlackCross(gatePos)
@@ -120,6 +117,15 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
             blackBlocks.add(point)
         }
         game.musicPlayer.play("level $levelNo", speedFactor)
+    }
+
+    fun retryLevel() {
+        startLevel(fruits.size, apples.size)
+    }
+
+    fun nextLevel() {
+        levelNo = if (levelNo < NUM_LEVELS) levelNo + 1 else 1
+        startLevel()
     }
 
     private fun clear() {
@@ -174,7 +180,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         if (fruits.isEmpty() && !winning) {
             winning = true
             paused = true
-            schedule(3f, { startLevel(true) })
+            schedule(3f, { nextLevel() })
         }
     }
 
@@ -182,7 +188,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         if (!frank.isDead) {
             val anim = ExplodeAnim(frank, whiteSquareTex, Color.RED, true) {
                 if (livesLeft > 0) {
-                    startLevel(false, fruits.size, apples.size)
+                    retryLevel()
                 } else {
                     game.gameOver()
                 }

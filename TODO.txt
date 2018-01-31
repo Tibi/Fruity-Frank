@@ -1,6 +1,8 @@
- - bitmap font: use transparent background
+ - header
+ - other screens: intro, high scores, etc..
+ - cycle colors of logo:  using basic anim
+ - loading screen, list source of fruity.BAS
  - music in level 7 is too short
- - 3 lives then game over
  - sound
  - add a small probability for monsters to reverse dir
  - save game state
@@ -17,9 +19,6 @@
  - falling prune
  - 3 balls mode: one for each remaining life
  - machine gun mode
- - other screens: intro, high scores, etc..
- - loading screen, list source of fruity.BAS
- - cycle colors of logo using cycle.frag and https://docs.gimp.org/en/gimp-image-convert-indexed.html
  - bonus and fraise monsters
  - ktx-async use it to load assets
  - kdx: use ashley?

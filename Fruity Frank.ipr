@@ -304,7 +304,7 @@
     <configuration default="false" name="Desktop" type="Application" factoryName="Application" singleton="true">
       <extension name="coverage" enabled="false" merge="false" />
       <option name="MAIN_CLASS_NAME" value="tibi.fruity.desktop.DesktopLauncher" />
-      <option name="VM_PARAMETERS" value="-XXaltjvm=dcevm -javaagent:&quot;C:\Program Files\Java\hotswap-agent.jar&quot;" />
+      <option name="VM_PARAMETERS" value="-XXaltjvm=dcevm -javaagent:&quot;C:\Program Files\Java\hotswap-agent.jar&quot;=autoHotswap=true" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="file://$PROJECT_DIR$/android/assets" />
       <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />

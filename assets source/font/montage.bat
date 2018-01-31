@@ -1,0 +1,1 @@
+magick montage pngs/*.png -background none -geometry +8+8  fruity-font-in.png

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Input
 import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
+import ktx.app.clearScreen
 import ktx.app.use
 
 class StartScreen(val game: FruityFrankGame) : KtxScreen {
@@ -20,6 +21,7 @@ class StartScreen(val game: FruityFrankGame) : KtxScreen {
     }
 
     override fun render(delta: Float) {
+        clearScreen(.1f, .3f,.5f)
         game.batch.use {
             game.font.draw(game.batch, "START SCREEN", GAME_WIDTH / 2, GAME_HEIGHT / 2)
         }

@@ -1,4 +1,3 @@
- - header
  - other screens: intro, high scores, etc..
  - cycle colors of logo:  using basic anim
  - loading screen, list source of fruity.BAS

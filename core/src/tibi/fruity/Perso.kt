@@ -28,7 +28,7 @@ abstract class Perso(gameScreen: GameScreen, var anims: AnimationMap, pos: IntPo
     }
 }
 
-enum class MonsterType { GUY, PRUNE, FRAISE, BONUS }
+enum class MonsterType(val score: Int) { GUY(20), PRUNE(50), FRAISE(100), BONUS(200) }
 
 class Monster(gameScreen: GameScreen, val type: MonsterType, anims: AnimationMap, pos: IntPoint, speedFactor: Float)
     : Perso(gameScreen, anims, pos, speedFactor) {
@@ -93,6 +93,10 @@ class Frank(gameScreen: GameScreen, atlas: TextureAtlas)
 
     override fun dig(pos: IntPoint, direction: Direction) {
         gameScreen.dig(pos, direction)
+    }
+
+    override fun render(batch: SpriteBatch) {
+        if (!isDead) super.render(batch)
     }
 
     fun throwBall() {

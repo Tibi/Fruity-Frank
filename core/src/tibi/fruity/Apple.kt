@@ -87,7 +87,7 @@ class Apple(gameScreen: GameScreen, pos: IntPoint)
 
     override fun detectCollision(newPos: Vector2): Vector2 {
         if (isFalling()) {
-            gameScreen.monsters.toList().filter { collides(it) }.forEach { gameScreen.killMonster(it) }
+            gameScreen.monsters.toList().filter { collides(it) }.forEach { gameScreen.killMonster(it, true) }
             if (collides(gameScreen.frank)) {
                 gameScreen.killFrank()
             }

@@ -25,7 +25,7 @@ import kotlin.math.min
 import com.badlogic.gdx.utils.Array as GdxArray
 
 
-class GameScreen(val game: FruityFrankGame) : KtxScreen {
+class GameScreen(val game: FruityFrankGame, val header: Header) : KtxScreen {
 
     private var levelNo = 1
     val frank = Frank(this, game.atlas)
@@ -39,7 +39,6 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
     private val backgrounds = (1..7).map { game.atlas.findRegion("backgrounds/level$it").also {
         it.texture.setWrap(Texture.TextureWrap.Repeat, Texture.TextureWrap.Repeat)
     } }
-    private val header = game.atlas.findRegion("backgrounds/header")
     val blackTex: AtlasRegion = game.atlas.findRegion("backgrounds/black")
     private val blackHighTex = game.atlas.findRegion("backgrounds/black_high")
     private val fruitTextures = listOf("cherry", "banana", "pear", "blueberry", "grape", "lemon", "peach").map {
@@ -64,7 +63,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         set(value) { game.musicPlayer.pause(value); field = value }
     private var speedFactor = 1.0f
     val speed: Float get() = 90f * speedFactor
-    private var score: Int = 0
+    var score: Int = 0
     private var livesLeft = 3
 
     private val isAndroid = Gdx.app.type == Application.ApplicationType.Android
@@ -89,10 +88,13 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
 
     override fun show() {
         Gdx.input.inputProcessor = InputMultiplexer(ui, input, GestureDetector(gestureListener))
+//        game.batch.disableBlending()
+        levelNo = 1
+        livesLeft = 3
         startLevel()
     }
 
-    private fun startLevel(numFruits: Int = 20, numApples: Int = 10) {
+    private fun startLevel(numFruits: Int = 2, numApples: Int = 10) {
         clear()
         speedFactor = 1.0f + levelNo / 8f
         Gdx.app.log("", "Starting level $levelNo")
@@ -132,6 +134,10 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         frank.isDead = false
         winning = false
         paused = false
+        stateTime = 0f
+        monsterSpawnInterval = 2f
+        monsterSpawnStateTime = 0f
+
         blackBlocks.clear()
         highBlackBlocks.clear()
         fruits.clear()
@@ -189,19 +195,20 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
             val anim = ExplodeAnim(frank, whiteSquareTex, Color.RED, true) {
                 if (livesLeft > 0) {
                     retryLevel()
+                    livesLeft--
                 } else {
-                    game.gameOver()
+                    game.gameOver(score)
                 }
             }
             explodeAnims.add(anim)
             frank.isDead = true
-            livesLeft--
         }
     }
 
-    fun killMonster(monster: Monster) {
+    fun killMonster(monster: Monster, byApple: Boolean = false) {
         explodeAnims.add(ExplodeAnim(monster, whiteSquareTex, Color.BLUE))
         monsters.remove(monster)
+        score += monster.type.score * if (byApple) 8 else 1
     }
 
 
@@ -219,10 +226,9 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
         }
 
         batch.use {
-            batch.disableBlending()
 
             // Header
-            batch.draw(header, 0F, GAME_HEIGHT - HEADER_HEIGHT - 1)
+            header.render(batch, score, game.highScore, livesLeft - 1)
             // Background
             TiledDrawable(backgrounds[levelNo - 1]).draw(batch, 0F, 0F, GAME_WIDTH, GAME_HEIGHT - HEADER_HEIGHT - 1)
 
@@ -262,6 +268,10 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
             isKeyPressed(Keys.PERIOD, Keys.S, Keys.DOWN)   -> DOWN
             else -> NONE
         }
+    }
+
+    override fun hide() {
+        game.batch.enableBlending()
     }
 
     override fun resize(width: Int, height: Int) {

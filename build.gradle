@@ -71,7 +71,7 @@ project(":core") {
 
 
     // Store the parameters you want to pass the texturePacker here...
-    project.ext.texturePacker = [ "assets source/sprites", "android/assets/", "main" ]
+    project.ext.texturePacker = [ "assets source/sprites", "android/assets/sprites", "main" ]
 
     // Packs the textures to the atlas
     task texturePacker doLast {

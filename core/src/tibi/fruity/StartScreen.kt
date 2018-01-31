@@ -22,6 +22,7 @@ class StartScreen(val game: FruityFrankGame) : KtxScreen {
 
     override fun render(delta: Float) {
         clearScreen(.1f, .3f,.5f)
+//        game.batch.enableBlending()
         game.batch.use {
             game.font.draw(game.batch, "START SCREEN", GAME_WIDTH / 2, GAME_HEIGHT / 2)
         }

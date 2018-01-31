@@ -36,13 +36,13 @@ object DesktopLauncher {
             } catch (e: Exception) {
                 Gdx.app.error("", "Error opening midi: $fileNamePrefix.", e)
             }
-            sequencer.start()
+//            sequencer.start()
         }
 
         override fun pause(value: Boolean) {
             if (sequencer.isOpen) {
-                if (value) sequencer.stop()
-                else sequencer.start()
+//                if (value) sequencer.stop()
+//                else sequencer.start()
             }
         }
 

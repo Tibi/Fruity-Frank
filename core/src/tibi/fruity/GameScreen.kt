@@ -73,7 +73,7 @@ class GameScreen(val game: FruityFrankGame) : KtxScreen {
     private val ui = FrankUI(this, viewport)
     private val input = FruityInput(this)
     private val gestureListener = FrankGestureListener(this)
-    private val shader = ShaderProgram(Gdx.files.internal("passthrough.vert"), Gdx.files.internal("cycle_black.frag"))
+    private val shader = ShaderProgram(Gdx.files.internal("shaders/passthrough.vert"), Gdx.files.internal("shaders/cycle_black.frag"))
 
     val debug = true
 

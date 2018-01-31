@@ -3,7 +3,6 @@ package tibi.fruity
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.Screen
 import com.badlogic.gdx.files.FileHandle
-import com.badlogic.gdx.graphics.Color
 import com.badlogic.gdx.graphics.g2d.BitmapFont
 import com.badlogic.gdx.graphics.g2d.SpriteBatch
 import com.badlogic.gdx.graphics.g2d.TextureAtlas
@@ -18,9 +17,8 @@ class FruityFrankGame(val musicPlayer: MusicPlayer) : KtxGame<Screen>() {
 
     override fun create() {
         batch = SpriteBatch()
-        atlas = TextureAtlas("main.atlas")
-        font = BitmapFont()
-        font.color = Color.WHITE
+        atlas = TextureAtlas("sprites/main.atlas")
+        font = BitmapFont(Gdx.files.internal("font/fruity-font.fnt"))
         addScreen(StartScreen(this))
         addScreen(GameScreen(this))
         addScreen(GameOverScreen(this))

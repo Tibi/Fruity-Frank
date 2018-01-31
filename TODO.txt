@@ -1,3 +1,4 @@
+ - bitmap font: use transparent background
  - music in level 7 is too short
  - 3 lives then game over
  - sound
@@ -16,8 +17,8 @@
  - falling prune
  - 3 balls mode: one for each remaining life
  - machine gun mode
- - bitmap font for score
  - other screens: intro, high scores, etc..
+ - loading screen, list source of fruity.BAS
  - cycle colors of logo using cycle.frag and https://docs.gimp.org/en/gimp-image-convert-indexed.html
  - bonus and fraise monsters
  - ktx-async use it to load assets

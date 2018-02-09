@@ -33,12 +33,12 @@ class FrankUI(gameScreen: GameScreen, viewport: Viewport) : Stage(viewport) {
 
         leftBt.width = KEY_BUTTON_SIZE
         leftBt.height = KEY_BUTTON_SIZE
-        leftBt.setPosition(0f, - KEY_BUTTON_SIZE)
+        leftBt.setPosition(0f, -KEY_BUTTON_SIZE)
         addActor(leftBt)
 
         rightBt.width = KEY_BUTTON_SIZE
         rightBt.height = KEY_BUTTON_SIZE
-        rightBt.setPosition(KEY_BUTTON_SIZE + margin, - KEY_BUTTON_SIZE)
+        rightBt.setPosition(KEY_BUTTON_SIZE + margin, -KEY_BUTTON_SIZE)
         addActor(rightBt)
 
         downBt.width = KEY_BUTTON_SIZE

@@ -47,7 +47,7 @@ class GameScreen(val game: FruityFrankGame, val header: Header) : KtxScreen {
     val appleTex: AtlasRegion = game.atlas.findRegion("fruits/apple")
     val appleCrashAnim = Animation(.2f, game.atlas.findRegions("fruits/apple_crash"))
     private val gate = Animation(.4f, game.atlas.findRegions("backgrounds/gate"), LOOP)
-    val gatePos = IntPoint(random(1, GRID_WIDTH-2), random(1, GRID_HEIGHT-2))
+    val gatePos = IntPoint(random(1, GRID_WIDTH -2), random(1, GRID_HEIGHT -2))
     private val whiteSquareTex: AtlasRegion = game.atlas.findRegion("backgrounds/white_square")
     private var explodeAnims = mutableListOf<ExplodeAnim>()
     private var isRegainingBall = false
@@ -251,9 +251,6 @@ class GameScreen(val game: FruityFrankGame, val header: Header) : KtxScreen {
             balls.forEach { it.render(batch) }
             explodeAnims.forEach { it.render(batch) }
         }
-        if (batch.renderCalls > 1) {
-            Gdx.app.log("", "GPU access: ${batch.renderCalls}")
-        }
         ui.draw()
     }
 
@@ -276,7 +273,8 @@ class GameScreen(val game: FruityFrankGame, val header: Header) : KtxScreen {
 
     override fun resize(width: Int, height: Int) {
         viewport.update(width, height, false)
-        ui.viewport.update(width, height)
+        // TODO test, useless
+//        ui.viewport.update(width, height)
     }
 
     private fun drawBlackCross(pt: IntPoint) {

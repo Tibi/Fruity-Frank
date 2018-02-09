@@ -3,12 +3,12 @@ import com.badlogic.gdx.tools.texturepacker.TexturePacker
 buildscript {
     ext {
         appName = "Fruity Frank"
-        gdxVersion = '1.9.7'
+        kotlin_version = '1.2.21'
+        gdxVersion = '1.9.8'
         ktxVersion = '1.9.8-b1'
         roboVMVersion = '1.12.0'
     }
 
-    ext.kotlin_version = '1.2.20'
     repositories {
         mavenCentral()
         maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }

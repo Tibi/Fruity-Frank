@@ -47,8 +47,6 @@ class FruityFrankGame(val musicPlayer: MusicPlayer) : KtxGame<Screen>() {
     }
 }
 
-const val MUSIC_DIR = "music"
-
 interface MusicPlayer {
 
     fun play(fileNamePrefix: String, speedFactor: Float)
@@ -57,6 +55,6 @@ interface MusicPlayer {
     fun release()
 
     fun findFile(prefix: String): FileHandle {
-        return Gdx.files.internal(MUSIC_DIR).list({ _, name -> name.startsWith(prefix) })[0]
+        return Gdx.files.internal("music").list({ _, name -> name.startsWith(prefix) })[0]
     }
 }

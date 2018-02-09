@@ -1,4 +1,5 @@
  - other screens: intro, high scores, etc..
+   - high score name input. Gdx.input.getTextInput
  - cycle colors of logo:  using basic anim
  - loading screen, list source of fruity.BAS
  - music in level 7 is too short

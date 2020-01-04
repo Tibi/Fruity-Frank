@@ -5,7 +5,7 @@ import com.badlogic.gdx.Input
 import ktx.app.KtxInputAdapter
 import ktx.app.KtxScreen
 import ktx.app.clearScreen
-import ktx.app.use
+import ktx.graphics.use
 
 class StartScreen(val game: FruityFrankGame) : KtxScreen {
 

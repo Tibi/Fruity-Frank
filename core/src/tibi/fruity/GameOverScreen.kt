@@ -1,7 +1,7 @@
 package tibi.fruity
 
 import ktx.app.KtxScreen
-import ktx.app.use
+import ktx.graphics.use
 
 
 class GameOverScreen(private val game: FruityFrankGame, val header: Header) : KtxScreen {

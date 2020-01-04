@@ -17,12 +17,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable
 import com.badlogic.gdx.utils.viewport.FitViewport
 import com.badlogic.gdx.utils.viewport.StretchViewport
 import ktx.app.KtxScreen
-import ktx.app.use
+import ktx.graphics.use
 import tibi.fruity.Direction.*
 import tibi.fruity.MonsterType.GUY
 import tibi.fruity.MonsterType.PRUNE
 import kotlin.math.min
-import com.badlogic.gdx.utils.Array as GdxArray
 
 
 class GameScreen(val game: FruityFrankGame, val header: Header) : KtxScreen {

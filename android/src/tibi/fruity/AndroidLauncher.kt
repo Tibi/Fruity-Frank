@@ -1,6 +1,6 @@
 package tibi.fruity
 
-import android.media.AudioManager
+import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.PlaybackParams
 import android.os.Bundle
@@ -55,7 +55,10 @@ class AndroidLauncher : AndroidApplication() {
                 val descriptor = file.assetFileDescriptor
                 player.setDataSource(descriptor.fileDescriptor,
                         descriptor.startOffset, descriptor.length)
-                player.setAudioStreamType(AudioManager.STREAM_MUSIC)
+                player.setAudioAttributes(AudioAttributes
+                               .Builder()
+                               .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+                               .build())
                 val params = PlaybackParams()
                 params.speed = speedFactor!!
                 player.playbackParams = params
